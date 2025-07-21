@@ -1,0 +1,28 @@
+{
+  "name": "Izanagi Sales System",
+  "short_name": "Izanagi",
+  "description": "Sistema de ventas optimizado para móviles y PWA.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#002A8F",
+  "theme_color": "#CF142B",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+} 

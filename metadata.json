@@ -1,0 +1,6 @@
+{
+  "name": "Izanagi Sales System",
+  "description": "A comprehensive Point of Sale (POS) and inventory management system built with React and TypeScript. It allows users to manage sales, track inventory, view reports, and configure system settings, with all data stored locally in the browser.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
