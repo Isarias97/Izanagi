@@ -304,7 +304,7 @@ const InventoryPage: React.FC = () => {
             </div>
             
             <div className="overflow-x-auto rounded-lg border border-slate-700">
-                <table className="w-full text-sm text-left text-gray-300 min-w-[900px]">
+                <table className="w-full text-sm text-left text-gray-300 min-w-[900px] divide-y divide-slate-700">
                     <thead className="text-xs text-gray-300 uppercase bg-secondary">
                         <tr>
                             {productTableHeaders.map(h => (
@@ -332,7 +332,7 @@ const InventoryPage: React.FC = () => {
                             const category = state.categories.find(c => c.id === p.categoryId);
                             const stockStatus = getStockStatus(p.stock);
                             return (
-                                <tr key={p.id} className="border-b border-slate-700 hover:bg-slate-800/50">
+                                <tr key={p.id} className="border-b border-slate-700 hover:bg-slate-800/50 space-y-2">
                                     <td className="px-6 py-4">{p.sku}</td>
                                     <td className="px-6 py-4 font-semibold flex items-center gap-3"><span className="text-xl">{category?.icon || DEFAULT_ICON}</span> {p.name}</td>
                                     <td className="px-6 py-4">{category?.name || 'N/A'}</td>

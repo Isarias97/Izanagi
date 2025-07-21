@@ -73,7 +73,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="bg-dark-bg border border-slate-700 rounded-2xl shadow-2xl w-full max-w-2xl transform transition-transform duration-300 scale-95 animate-scale-in"
+        className="bg-dark-bg border border-slate-700 rounded-2xl shadow-2xl w-full max-w-2xl transform transition-transform duration-300 scale-95 animate-scale-in p-6 sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="px-6 py-4 flex justify-between items-center border-b border-slate-700">

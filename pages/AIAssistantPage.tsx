@@ -105,7 +105,7 @@ const AIAssistantPage: React.FC = () => {
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in space-y-4 lg:space-y-0">
             <div className="lg:col-span-1">
                 <Card>
                     <CardHeader icon="fa-robot">Panel del Asistente IA</CardHeader>

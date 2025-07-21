@@ -16,7 +16,7 @@ interface CardProps {
   className?: string;
 }
 export const Card: React.FC<CardProps> = ({ children, className }) => (
-  <div className={`bg-dark-card backdrop-blur-md border border-slate-700/50 rounded-2xl shadow-xl overflow-hidden ${className || ''}`} tabIndex={0} role="region" aria-label="Tarjeta de información">
+  <div className={`bg-dark-card backdrop-blur-md border border-slate-700/50 rounded-2xl shadow-xl overflow-hidden mb-6 p-6 sm:p-8 ${className || ''}`} tabIndex={0} role="region" aria-label="Tarjeta de información">
     {children}
   </div>
 );
@@ -35,7 +35,7 @@ export const CardHeader: React.FC<CardHeaderProps> = ({ children, icon }) => (
 );
 
 export const CardContent: React.FC<CardProps> = ({ children, className }) => (
-  <div className={`p-6 ${className || ''}`}>
+  <div className={`p-4 sm:p-6 ${className || ''}`}>
     {children}
   </div>
 );
@@ -76,17 +76,17 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ children, variant = 'primary', icon, className, ...props }, ref) => {
-    const baseClasses = "font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-bg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none active:scale-95 select-none min-h-[48px] min-w-[48px] text-base md:text-lg";
+    const baseClasses = "font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-bg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none active:scale-95 select-none min-h-[48px] min-w-[48px] text-base md:text-lg shadow-md border-2 border-transparent";
     
     const variantClasses = {
-      primary: "bg-accent hover:bg-indigo-500 text-white px-6 py-3",
-      danger: "bg-danger hover:bg-red-700 text-white px-6 py-3",
-      success: "bg-success hover:bg-green-600 text-white px-6 py-3",
-      icon: "bg-slate-700/80 hover:bg-slate-600 text-gray-200 w-12 h-12 flex items-center justify-center",
+      primary: "bg-primary text-white border-accent hover:bg-accent hover:text-primary focus:bg-accent focus:text-primary",
+      danger: "bg-danger text-white border-danger hover:bg-white hover:text-danger focus:bg-white focus:text-danger",
+      success: "bg-success text-white border-success hover:bg-white hover:text-success focus:bg-white focus:text-success",
+      icon: "bg-accent text-primary w-12 h-12 flex items-center justify-center border-accent hover:bg-primary hover:text-accent focus:bg-primary focus:text-accent",
     };
 
     return (
-      <button ref={ref} className={`${baseClasses} ${variantClasses[variant]} ${className || ''}`} {...props} aria-label={props['aria-label'] || (typeof children === 'string' ? children : undefined)}>
+      <button ref={ref} className={`${baseClasses} ${variantClasses[variant]} px-6 py-3 ${className || ''}`} {...props} aria-label={props['aria-label'] || (typeof children === 'string' ? children : undefined)}>
         <div className="flex items-center justify-center gap-2">
           {icon && <Icon name={icon} />}
           {children}

@@ -83,7 +83,7 @@ const PurchaseCartItemCard: React.FC<{
     };
 
     return (
-        <li className={`rounded-lg p-4 flex flex-col gap-4 ${item.isNew ? 'bg-green-900/30 border border-green-500' : 'bg-slate-800/60 border border-slate-700'}`}>
+        <li className={`rounded-lg p-4 flex flex-col gap-4 ${item.isNew ? 'bg-green-900/30 border border-green-500' : 'bg-slate-800/60 border border-slate-700'} mb-4`}>
             <div className="flex justify-between items-start">
                 <div>
                     {item.isNew ? (
@@ -107,7 +107,7 @@ const PurchaseCartItemCard: React.FC<{
             </div>
             
             {/* --- INPUTS --- */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 {item.purchaseMode === 'package' ? (
                     <>
                         <InputGroup label="Cant. Paquetes"><Input type="number" value={item.packageQuantity} onChange={e => onUpdate(item.id, 'packageQuantity', e.target.value)} placeholder="0" min="1" /></InputGroup>

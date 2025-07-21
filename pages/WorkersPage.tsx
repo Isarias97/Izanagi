@@ -123,6 +123,34 @@ const WorkersPage: React.FC = () => {
                     </Button>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <Card>
+                        <CardHeader icon="fa-user-plus">Agregar Trabajador</CardHeader>
+                        <CardContent>
+                            <Button icon="fa-user-plus" onClick={handleOpenAddModal}>
+                                Agregar Trabajador
+                            </Button>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader icon="fa-search">Buscar Trabajador</CardHeader>
+                        <CardContent>
+                            <InputGroup label="Nombre o PIN">
+                                <Input placeholder="Buscar por nombre o PIN" />
+                            </InputGroup>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader icon="fa-filter">Filtros</CardHeader>
+                        <CardContent>
+                            <Select>
+                                <option value="">Todos los Roles</option>
+                                {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                            </Select>
+                        </CardContent>
+                    </Card>
+                </div>
+
                 <div className="overflow-x-auto rounded-lg border border-slate-700">
                     <table className="w-full text-sm text-left text-gray-300 min-w-[600px]">
                         <thead className="text-xs text-gray-300 uppercase bg-secondary">

@@ -314,7 +314,7 @@ const PosPage: React.FC = () => {
   if (state.products.length === 0 && activeTab === 'sale') {
     return (
       <Card>
-        <CardContent className="flex flex-col items-center justify-center text-center p-10 min-h-[60vh]">
+        <CardContent className="flex flex-col items-center justify-center text-center p-10 min-h-[60vh] space-y-6">
           <Icon name="fa-rocket" className="text-6xl text-accent mb-6" />
           <h2 className="text-3xl font-bold mb-2">¡Bienvenido a Sistema Izanagi!</h2>
           <p className="text-lg text-gray-400 mb-8 max-w-2xl">
