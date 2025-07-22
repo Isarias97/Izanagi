@@ -357,9 +357,10 @@ const PurchasesPage: React.FC = () => {
                                 <Input
                                     type="text" placeholder="Buscar producto existente..." value={searchTerm}
                                     onChange={e => setSearchTerm(e.target.value)} autoComplete="off"
+                                    className="py-3"
                                 />
                                 {searchTerm && searchResults.length === 0 && (
-                                    <Button icon="fa-plus" onClick={handleCreateNewProduct}>Crear</Button>
+                                    <Button icon="fa-plus" onClick={handleCreateNewProduct} className="min-h-[44px] px-5 py-3 active:scale-95 touch-manipulation no-hover">Crear</Button>
                                 )}
                             </div>
                             {searchResults.length > 0 && searchTerm.length > 0 && (
@@ -376,7 +377,7 @@ const PurchasesPage: React.FC = () => {
                         
                         <div className="mt-6">
                             <h4 className="flex items-center gap-3 text-lg font-semibold mb-3"><Icon name="fa-dolly-flatbed" /> Carrito de Compra</h4>
-                            <div className="bg-slate-900/50 rounded-lg p-2 min-h-[300px] max-h-[50vh] overflow-y-auto">
+                            <div className="bg-slate-900/50 rounded-lg p-2 min-h-[300px] max-h-[50vh] overflow-y-auto no-scrollbar">
                                 {cart.length === 0 ? (
                                     <div className="flex items-center justify-center h-full text-gray-500">Agregue productos desde la barra de búsqueda</div>
                                 ) : (
@@ -399,14 +400,14 @@ const PurchasesPage: React.FC = () => {
                                 <span className="text-xl font-bold">Costo Total:</span>
                                 <span className="text-2xl font-bold text-accent">${totalCost.toFixed(2)} CUP</span>
                             </div>
-                             <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-lg transition-colors duration-300 ${hasInsufficientFunds ? 'bg-red-900/30' : 'bg-slate-800'}`}>
+                             <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-lg transition-colors duration-300 ${hasInsufficientFunds ? 'bg-red-900/30' : 'bg-slate-800'}`}> 
                                 <div className='mb-2 sm:mb-0'>
                                     <p className="text-sm text-gray-400">Saldo de Inversión Actual</p>
                                     <p className="text-lg font-semibold">${state.investmentBalance.toFixed(2)}</p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-400 text-left sm:text-right">Saldo Restante Post-Compra</p>
-                                    <p className={`text-lg font-bold ${hasInsufficientFunds ? 'text-danger' : 'text-success'}`}>
+                                    <p className={`text-lg font-bold ${hasInsufficientFunds ? 'text-danger' : 'text-success'}`}> 
                                         ${remainingBalance.toFixed(2)}
                                     </p>
                                 </div>
@@ -419,7 +420,7 @@ const PurchasesPage: React.FC = () => {
                             )}
                         </div>
                         <div className="mt-6" title={getDisabledTitle()}>
-                             <Button variant="success" icon="fa-check-circle" className="w-full text-lg" onClick={finalizePurchase} disabled={isPurchaseDisabled}>
+                             <Button variant="success" icon="fa-check-circle" className="w-full text-lg min-h-[48px] py-4 active:scale-95 touch-manipulation no-hover" onClick={finalizePurchase} disabled={isPurchaseDisabled}>
                                 Finalizar Compra
                             </Button>
                         </div>
@@ -435,7 +436,7 @@ const PurchasesPage: React.FC = () => {
                         ) : (
                             <div className="space-y-4">
                             {[...state.purchases].reverse().map(p => (
-                                <div key={p.id} className="bg-slate-800/60 rounded-lg p-4">
+                                <div key={p.id} className="bg-slate-800/60 rounded-lg p-4 active:scale-95 touch-manipulation no-hover">
                                     <div className="flex justify-between items-center border-b border-slate-700 pb-2 mb-2">
                                         <h4 className="font-bold">Compra #{p.id}</h4>
                                         <span className="text-sm text-gray-400">{new Date(p.date).toLocaleString()}</span>

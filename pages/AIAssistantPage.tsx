@@ -116,7 +116,7 @@ const AIAssistantPage: React.FC = () => {
                                 key={opt.id}
                                 onClick={() => handleRunAnalysis(opt.id)}
                                 disabled={isLoading}
-                                className={`w-full text-left p-4 rounded-lg flex items-start gap-4 transition-all duration-200 disabled:opacity-50 disabled:cursor-wait ${currentAnalysis === opt.id ? 'bg-accent/80' : 'bg-slate-800/60 hover:bg-slate-700/80'}`}
+                                className={`w-full text-left p-4 rounded-lg flex items-start gap-4 transition-all duration-200 disabled:opacity-50 disabled:cursor-wait min-h-[56px] text-base active:scale-95 touch-manipulation no-hover ${currentAnalysis === opt.id ? 'bg-accent/80' : 'bg-slate-800/60'}`}
                             >
                                 <Icon name={opt.icon} className={`text-2xl mt-1 ${currentAnalysis === opt.id ? 'text-white' : 'text-accent'}`} />
                                 <div>
@@ -176,6 +176,8 @@ const AIAssistantPage: React.FC = () => {
               .prose li {
                   margin-bottom: 0.25em;
               }
+              .touch-manipulation { touch-action: manipulation; }
+              .no-hover:hover { background: none !important; filter: none !important; }
             `}</style>
         </div>
     );

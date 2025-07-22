@@ -328,37 +328,37 @@ const PosPage: React.FC = () => {
 
   return (
     <div>
-        <div className="flex gap-2 mb-6 border-b border-slate-700">
-          <button onClick={() => setActiveTab('sale')} className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition ${activeTab === 'sale' ? 'bg-accent text-white' : 'text-gray-400 hover:bg-slate-700'}`}>Venta Actual</button>
-          <button onClick={() => setActiveTab('audit')} className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition ${activeTab === 'audit' ? 'bg-accent text-white' : 'text-gray-400 hover:bg-slate-700'}`}>Auditoría</button>
+        <div className="flex gap-2 mb-6 border-b border-slate-700 overflow-x-auto no-scrollbar">
+          <button onClick={() => setActiveTab('sale')} className={`flex-1 px-4 py-3 text-base font-semibold rounded-t-lg transition ${activeTab === 'sale' ? 'bg-accent text-white shadow-md' : 'text-gray-400 hover:bg-slate-700'} focus:outline-none focus:ring-2 focus:ring-accent`}>Venta Actual</button>
+          <button onClick={() => setActiveTab('audit')} className={`flex-1 px-4 py-3 text-base font-semibold rounded-t-lg transition ${activeTab === 'audit' ? 'bg-accent text-white shadow-md' : 'text-gray-400 hover:bg-slate-700'} focus:outline-none focus:ring-2 focus:ring-accent`}>Auditoría</button>
         </div>
 
         {activeTab === 'sale' && (
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            <div className="lg:col-span-3">
-                <Card>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+            <div className="lg:col-span-3 order-2 lg:order-1">
+                <Card className="p-2 sm:p-4">
                 <CardHeader icon="fa-search">Venta Actual</CardHeader>
                 <CardContent>
-                    <div className="text-center text-sm text-gray-400 mb-4">Atajos: [Enter] Agregar | [F9] Pagar | [F12] Finalizar</div>
+                    <div className="text-center text-xs text-gray-400 mb-4">Atajos: [Enter] Agregar | [F9] Pagar | [F12] Finalizar</div>
                     <div className="min-h-[140px]">
                     {currentSale.selectedProduct ? (
                         <div className="bg-slate-900/50 p-4 rounded-lg border border-accent relative animate-fade-in">
                         <button onClick={handleCancelSelection} className="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl leading-none z-10">&times;</button>
-                        <div className="flex items-center gap-4 mb-4">
+                        <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
                             <span className="text-4xl">{state.categories.find(c => c.id === currentSale.selectedProduct!.categoryId)?.icon || DEFAULT_ICON}</span>
-                            <div>
+                            <div className="text-center sm:text-left">
                                 <p className="font-bold text-lg">{currentSale.selectedProduct.name}</p>
                                 <p className="text-sm text-gray-400">Precio: ${currentSale.selectedProduct.price.toFixed(2)} | Stock: {currentSale.selectedProduct.stock}</p>
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-end">
-                            <InputGroup label="Cantidad"><Input ref={quantityInputRef} type="number" min="1" value={quantity} onChange={e => setQuantity(e.target.value)} className="w-full" /></InputGroup>
-                            <Button icon="fa-plus" onClick={handleAddToSale}>Agregar al Carrito</Button>
+                        <div className="grid grid-cols-1 gap-4 items-end sm:grid-cols-[1fr_auto]">
+                            <InputGroup label="Cantidad"><Input ref={quantityInputRef} type="number" min="1" value={quantity} onChange={e => setQuantity(e.target.value)} className="w-full text-center text-lg" /></InputGroup>
+                            <Button icon="fa-plus" onClick={handleAddToSale} className="w-full sm:w-auto text-lg py-3">Agregar al Carrito</Button>
                         </div>
                         </div>
                     ) : (
                         <InputGroup label="Buscar por Nombre o SKU" className="relative">
-                        <Input ref={searchInputRef} type="text" id="product-search" placeholder="Escriba para buscar..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} autoComplete="off" />
+                        <Input ref={searchInputRef} type="text" id="product-search" placeholder="Escriba para buscar..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} autoComplete="off" className="text-lg" />
                         {searchResults.length > 0 && searchTerm.length > 0 && (
                             <div className="absolute w-full top-full mt-1 bg-slate-800 border border-slate-700 rounded-lg max-h-60 overflow-y-auto z-30 shadow-lg">
                                 {searchResults.map(p => { const category = state.categories.find(c => c.id === p.categoryId); return ( <div key={p.id} onClick={() => handleSelectProduct(p)} className="suggestion-item p-3 hover:bg-accent cursor-pointer border-b border-slate-700 flex items-center gap-3"> <span className="text-xl">{category?.icon || DEFAULT_ICON}</span> <span>{p.name} ({p.sku})</span> </div> ) })}
@@ -369,18 +369,56 @@ const PosPage: React.FC = () => {
                     </div>
                     <div className="mt-6">
                         <h4 className="flex items-center gap-3 text-lg font-semibold mb-3"><Icon name="fa-shopping-cart"/> Carrito de Compra</h4>
-                        <div className="bg-slate-900/50 rounded-lg p-2 min-h-[200px] max-h-[40vh] overflow-y-auto">
-                            {currentSale.items.length === 0 ? ( <div className="flex items-center justify-center h-full text-gray-500">El carrito está vacío</div> ) : ( <ul className="space-y-2"> {currentSale.items.map((item) => { const category = state.categories.find(c => c.id === item.categoryId); return ( <li key={item.id} className="bg-slate-800/60 rounded-lg p-3 flex items-center justify-between animate-fade-in"> <div className="flex items-center gap-3"> <span className="text-2xl">{category?.icon || DEFAULT_ICON}</span> <div> <p className="font-semibold">{item.name}</p> <p className="text-sm text-gray-400">{item.quantity} &times; ${item.price.toFixed(2)}</p> </div> </div> <div className="flex items-center gap-4"> <span className="font-bold text-lg w-28 text-right">${(item.quantity * item.price).toFixed(2)}</span> <Button variant="icon" className="bg-danger/30 hover:bg-danger/60" onClick={() => handleRemoveFromSale(item.id)}><Icon name="fa-times"/></Button> </div> </li> ); })} </ul> )}
+                        <div className="bg-slate-900/50 rounded-lg p-2 min-h-[120px] max-h-[40vh] overflow-y-auto">
+                            {currentSale.items.length === 0 ? ( <div className="flex items-center justify-center h-full text-gray-500">El carrito está vacío</div> ) : ( <ul className="space-y-2">
+                                {currentSale.items.map((item) => { const category = state.categories.find(c => c.id === item.categoryId); return (
+                                    <li key={item.id} className="bg-slate-800/60 rounded-lg p-3 flex flex-col sm:flex-row items-center justify-between animate-fade-in gap-2">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-2xl">{category?.icon || DEFAULT_ICON}</span>
+                                            <div>
+                                                <p className="font-semibold">{item.name}</p>
+                                                <p className="text-sm text-gray-400">{item.quantity} &times; ${item.price.toFixed(2)}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-4 mt-2 sm:mt-0">
+                                            <span className="font-bold text-lg w-24 text-right">${(item.quantity * item.price).toFixed(2)}</span>
+                                            <Button variant="icon" className="bg-danger/30 hover:bg-danger/60" onClick={() => handleRemoveFromSale(item.id)}><Icon name="fa-times"/></Button>
+                                        </div>
+                                    </li>
+                                )})}
+                            </ul> )}
                         </div>
                     </div>
                 </CardContent>
                 </Card>
             </div>
-            <div className="lg:col-span-2">
-                <Card>
+            <div className="lg:col-span-2 order-1 lg:order-2">
+                <Card className="p-2 sm:p-4">
                     <CardHeader icon="fa-money-check-alt">Resumen y Pago</CardHeader>
                     <CardContent className="flex flex-col h-full">
-                    {currentSale.items.length === 0 ? ( <div className="flex-grow flex flex-col items-center justify-center text-center text-gray-500 p-4"> <Icon name="fa-shopping-cart" className="text-5xl mb-4 text-slate-600" /> <p className="text-lg font-semibold">El carrito está vacío</p> <p className="text-gray-400">Agregue productos para ver el resumen.</p> </div> ) : ( <> <div className="flex-grow space-y-4"> <div className="text-right border-b border-slate-700 pb-4 mb-4"> <span className="text-gray-400">Total a Pagar</span> <p className="text-4xl font-bold text-accent">{saleTotals.total.toFixed(2)} <span className="text-2xl">CUP</span></p> </div> <InputGroup label="Moneda de Pago"> <Select value={currentSale.paymentCurrency} onChange={e => setCurrentSale(prev => ({...prev, paymentCurrency: e.target.value as any}))}> <option value="CUP">Efectivo (CUP)</option> <option value="MLC">Tarjeta (MLC)</option> <option value="USD">Dólares (USD)</option> </Select> </InputGroup> <InputGroup label={`Monto Pagado (${currentSale.paymentCurrency})`}> <Input ref={paymentInputRef} type="number" placeholder="0.00" step="0.01" min="0" value={currentSale.amountPaid} onChange={e => setCurrentSale(prev => ({...prev, amountPaid: e.target.value}))} /> </InputGroup> <InputGroup label="Vuelto (en CUP)"> <Input type="text" readOnly value={changeDisplay.text} className={`font-bold ${changeDisplay.className}`} /> </InputGroup> </div> <div className="mt-auto pt-6"> <Button ref={processSaleBtnRef} variant="success" icon="fa-check-circle" className="w-full text-lg" onClick={processSale}> Finalizar Venta (F12) </Button> </div> </> )}
+                    {currentSale.items.length === 0 ? ( <div className="flex-grow flex flex-col items-center justify-center text-center text-gray-500 p-4"> <Icon name="fa-shopping-cart" className="text-5xl mb-4 text-slate-600" /> <p className="text-lg font-semibold">El carrito está vacío</p> <p className="text-gray-400">Agregue productos para ver el resumen.</p> </div> ) : ( <> <div className="flex-grow space-y-4">
+                        <div className="text-right border-b border-slate-700 pb-4 mb-4">
+                            <span className="text-gray-400">Total a Pagar</span>
+                            <p className="text-4xl font-bold text-accent">{saleTotals.total.toFixed(2)} <span className="text-2xl">CUP</span></p>
+                        </div>
+                        <InputGroup label="Moneda de Pago">
+                            <Select value={currentSale.paymentCurrency} onChange={e => setCurrentSale(prev => ({...prev, paymentCurrency: e.target.value as any}))} className="text-lg">
+                                <option value="CUP">Efectivo (CUP)</option>
+                                <option value="MLC">Tarjeta (MLC)</option>
+                                <option value="USD">Dólares (USD)</option>
+                            </Select>
+                        </InputGroup>
+                        <InputGroup label={`Monto Pagado (${currentSale.paymentCurrency})`}>
+                            <Input ref={paymentInputRef} type="number" placeholder="0.00" step="0.01" min="0" value={currentSale.amountPaid} onChange={e => setCurrentSale(prev => ({...prev, amountPaid: e.target.value}))} className="text-lg" />
+                        </InputGroup>
+                        <InputGroup label="Vuelto (en CUP)">
+                            <Input type="text" readOnly value={changeDisplay.text} className={`font-bold ${changeDisplay.className} text-lg`} />
+                        </InputGroup>
+                    </div>
+                    <div className="mt-auto pt-6">
+                        <Button ref={processSaleBtnRef} variant="success" icon="fa-check-circle" className="w-full text-lg py-4" onClick={processSale}> Finalizar Venta (F12) </Button>
+                    </div>
+                    </> )}
                     </CardContent>
                 </Card>
             </div>

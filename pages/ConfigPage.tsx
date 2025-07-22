@@ -216,31 +216,26 @@ const ConfigPage: React.FC = () => {
               <div className="space-y-6">
                   <div className="bg-slate-900/50 p-6 rounded-lg border border-slate-700 space-y-4">
                       <h3 className="text-lg font-semibold flex items-center gap-2"><Icon name="fa-sliders-h" /> Configuración General</h3>
-                      
                       <InputGroup label="Tasa MLC a CUP (1 MLC = X CUP)">
-                          <Input name="mlcToCup" type="number" value={formState.mlcToCup} onChange={handleFormChange} step="0.01" min="0" placeholder="Ej: 235.00" />
+                          <Input name="mlcToCup" type="number" value={formState.mlcToCup} onChange={handleFormChange} step="0.01" min="0" placeholder="Ej: 235.00" className="py-3" />
                       </InputGroup>
-                      
                       <InputGroup label="Tasa USD a CUP (1 USD = X CUP)">
-                          <Input name="usdToCup" type="number" value={formState.usdToCup} onChange={handleFormChange} step="0.01" min="0" placeholder="Ej: 380.00" />
+                          <Input name="usdToCup" type="number" value={formState.usdToCup} onChange={handleFormChange} step="0.01" min="0" placeholder="Ej: 380.00" className="py-3" />
                       </InputGroup>
-                      
                       <InputGroup label="Productos por página en inventario">
-                          <Input name="itemsPerPage" type="number" value={formState.itemsPerPage} onChange={handleFormChange} min="1" step="1" placeholder="Ej: 10" />
+                          <Input name="itemsPerPage" type="number" value={formState.itemsPerPage} onChange={handleFormChange} min="1" step="1" placeholder="Ej: 10" className="py-3" />
                       </InputGroup>
-
                       <div className="pt-2">
                         <Button 
                           icon={saveButtonContent.icon} 
                           onClick={handleSaveChanges} 
-                          className="w-full justify-center"
+                          className="w-full justify-center min-h-[44px] text-base py-3 active:scale-95 touch-manipulation no-hover"
                           disabled={saveStatus === 'saving'}
                         >
                           {saveButtonContent.text}
                         </Button>
                       </div>
                   </div>
-                  
                   <div className="bg-slate-900/50 p-6 rounded-lg border border-slate-700 space-y-4">
                     <h3 className="text-lg font-semibold flex items-center gap-2"><Icon name="fa-wallet" /> Gestión de Saldo de Inversión</h3>
                     <div className="text-center bg-dark-bg p-4 rounded-lg">
@@ -249,36 +244,33 @@ const ConfigPage: React.FC = () => {
                     </div>
                     <InputGroup label="Establecer Nuevo Saldo de Inversión">
                       <div className="flex gap-2">
-                        <Input type="number" value={balanceInput} onChange={e => setBalanceInput(e.target.value)} placeholder="0.00" min="0" step="0.01" />
-                        <Button onClick={handleUpdateBalance} icon="fa-check">Actualizar</Button>
+                        <Input type="number" value={balanceInput} onChange={e => setBalanceInput(e.target.value)} placeholder="0.00" min="0" step="0.01" className="py-3" />
+                        <Button onClick={handleUpdateBalance} icon="fa-check" className="min-h-[44px] px-5 py-3 active:scale-95 touch-manipulation no-hover">Actualizar</Button>
                       </div>
                     </InputGroup>
                   </div>
               </div>
-
               <div className="space-y-6">
                 <div className="bg-slate-900/50 p-6 rounded-lg border border-slate-700 flex flex-col h-full">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Icon name="fa-database" /> Gestión de Datos</h3>
                     <p className="text-sm text-gray-400 mb-6">Guarde o cargue sus datos para seguridad o para moverlos a otra computadora.</p>
-                    
                     <div className="flex flex-col sm:flex-row gap-4 mt-auto">
-                        <Button icon="fa-file-export" onClick={handleExportData} className="flex-1 justify-center text-base py-3">
+                        <Button icon="fa-file-export" onClick={handleExportData} className="flex-1 justify-center text-base py-3 min-h-[44px] active:scale-95 touch-manipulation no-hover">
                             Exportar Datos
                         </Button>
-                        <Button icon="fa-file-import" onClick={handleImportClick} className="flex-1 justify-center text-base py-3">
+                        <Button icon="fa-file-import" onClick={handleImportClick} className="flex-1 justify-center text-base py-3 min-h-[44px] active:scale-95 touch-manipulation no-hover">
                             Importar Datos
                         </Button>
                         <input type="file" ref={importFileInputRef} onChange={handleFileImport} accept=".json" className="hidden" />
                     </div>
                 </div>
-
                 <div className="bg-red-900/20 border border-danger/50 p-6 rounded-lg">
                     <h4 className="font-semibold text-danger mb-2 flex items-center gap-2 text-lg">
                       <Icon name="fa-exclamation-triangle"/>
                       Zona de Peligro
                     </h4>
                     <p className="text-sm text-red-200/80 mb-4">Esta accion es destructiva e irreversible.</p>
-                    <Button variant="danger" icon="fa-trash-alt" onClick={handleResetClick} className="w-full justify-center">
+                    <Button variant="danger" icon="fa-trash-alt" onClick={handleResetClick} className="w-full justify-center min-h-[44px] text-base py-3 active:scale-95 touch-manipulation no-hover">
                         Restablecer Sistema de Fabrica
                     </Button>
                 </div>
@@ -322,6 +314,12 @@ const ConfigPage: React.FC = () => {
           </div>
         </div>
       </Modal>
+      <style>{`
+        .touch-manipulation { touch-action: manipulation; }
+        .no-hover:hover { background: none !important; filter: none !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </>
   );
 };

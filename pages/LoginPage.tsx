@@ -156,19 +156,19 @@ const LoginPage: React.FC<{ onLoginSuccess: (worker: Worker) => void }> = ({ onL
                     <div ref={initialRef} className="w-full flex-shrink-0 px-4 py-6 sm:p-8">
                         <h2 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-3"><Icon name="fa-sign-in-alt" /> Iniciar Sesión</h2>
                         <div className="flex flex-col gap-4">
-                            <Button icon="fa-user-shield" onClick={() => goToView('admin')} className="w-full text-lg py-6 justify-center">Entrar como Admin</Button>
-                            <Button icon="fa-users" onClick={() => goToView('worker')} className="w-full text-lg py-6 justify-center" variant="primary" disabled={state.workers.length === 0}>Entrar como Trabajador</Button>
+                            <Button icon="fa-user-shield" onClick={() => goToView('admin')} className="w-full text-lg py-6 justify-center min-h-[56px] active:scale-95 touch-manipulation no-hover">Entrar como Admin</Button>
+                            <Button icon="fa-users" onClick={() => goToView('worker')} className="w-full text-lg py-6 justify-center min-h-[56px] active:scale-95 touch-manipulation no-hover" variant="primary" disabled={state.workers.length === 0}>Entrar como Trabajador</Button>
                             {state.workers.length === 0 && <p className="text-xs text-center text-gray-400">No hay trabajadores registrados. Inicie como Admin.</p>}
                         </div>
                     </div>
                     
                     {/* Panel 2: Admin View */}
                     <div ref={adminRef} className="w-full flex-shrink-0 px-4 py-6 sm:p-8">
-                        <div className="flex items-center justify-between w-full mb-6"><h2 className="text-xl font-bold flex items-center gap-3"><Icon name="fa-user-shield" /> Acceso Admin</h2><Button variant="icon" onClick={() => goToView('initial')} title="Volver" className="!w-10 !h-10"><Icon name="fa-arrow-left" /></Button></div>
+                        <div className="flex items-center justify-between w-full mb-6"><h2 className="text-xl font-bold flex items-center gap-3"><Icon name="fa-user-shield" /> Acceso Admin</h2><Button variant="icon" onClick={() => goToView('initial')} title="Volver" className="!w-10 !h-10 active:scale-95 touch-manipulation no-hover"><Icon name="fa-arrow-left" /></Button></div>
                         <form onSubmit={handleAdminLogin} className="space-y-6">
                             <InputGroup label="Usuario"><Input ref={usernameInputRef} type="text" value={username} onChange={e => setUsername(e.target.value)} required /></InputGroup>
                             <InputGroup label="Contraseña"><Input type="password" value={password} onChange={e => setPassword(e.target.value)} required /></InputGroup>
-                            <Button type="submit" className="w-full justify-center" icon="fa-sign-in-alt">Iniciar Sesión</Button>
+                            <Button type="submit" className="w-full justify-center min-h-[44px] text-base py-3 active:scale-95 touch-manipulation no-hover" icon="fa-sign-in-alt">Iniciar Sesión</Button>
                         </form>
                     </div>
 
@@ -176,10 +176,10 @@ const LoginPage: React.FC<{ onLoginSuccess: (worker: Worker) => void }> = ({ onL
                     <div ref={workerRef} className="w-full flex-shrink-0 px-4 py-6 sm:p-8">
                         {!selectedWorker ? (
                             <>
-                                <div className="flex items-center justify-between w-full mb-6"><h2 className="text-xl font-bold flex items-center gap-3"><Icon name="fa-users" /> Seleccione Usuario</h2><Button variant="icon" onClick={() => goToView('initial')} title="Volver" className="!w-10 !h-10"><Icon name="fa-arrow-left" /></Button></div>
+                                <div className="flex items-center justify-between w-full mb-6"><h2 className="text-xl font-bold flex items-center gap-3"><Icon name="fa-users" /> Seleccione Usuario</h2><Button variant="icon" onClick={() => goToView('initial')} title="Volver" className="!w-10 !h-10 active:scale-95 touch-manipulation no-hover"><Icon name="fa-arrow-left" /></Button></div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {state.workers.map(worker => (
-                                        <button key={worker.id} onClick={() => setSelectedWorker(worker)} className="p-4 bg-slate-800/60 hover:bg-accent/20 rounded-lg text-center transition-colors duration-200 border border-transparent hover:border-accent focus:outline-none focus:ring-2 focus:ring-accent">
+                                        <button key={worker.id} onClick={() => setSelectedWorker(worker)} className="p-4 bg-slate-800/60 rounded-lg text-center transition-colors duration-200 border border-transparent focus:outline-none focus:ring-2 focus:ring-accent min-h-[56px] text-base active:scale-95 touch-manipulation no-hover">
                                             <Icon name="fa-user-circle" className="text-4xl mb-2 text-slate-400" /><p className="font-semibold text-lg text-white">{worker.name}</p><p className={`text-sm font-semibold ${getRoleStyle(worker.role)}`}>{worker.role}</p>
                                         </button>
                                     ))}
@@ -187,7 +187,7 @@ const LoginPage: React.FC<{ onLoginSuccess: (worker: Worker) => void }> = ({ onL
                             </>
                         ) : (
                             <>
-                                <div className="flex items-center justify-between w-full mb-4"><h2 className="text-xl font-bold flex items-center gap-3"><Icon name="fa-lock" /> Ingrese su PIN</h2><Button variant="primary" className="!py-1 !px-3 !h-auto" onClick={handleGoBackToWorkerSelect}>Volver</Button></div>
+                                <div className="flex items-center justify-between w-full mb-4"><h2 className="text-xl font-bold flex items-center gap-3"><Icon name="fa-lock" /> Ingrese su PIN</h2><Button variant="primary" className="!py-1 !px-3 !h-auto min-h-[40px] active:scale-95 touch-manipulation no-hover" onClick={handleGoBackToWorkerSelect}>Volver</Button></div>
                                 <div className="text-center">
                                     <p className="text-xl font-semibold mb-2">{selectedWorker.name}</p><p className="text-sm text-gray-400 mb-4">{selectedWorker.role}</p>
                                     <PinInputDisplay pinLength={pin.length} /><Numpad onInput={handlePinInput} onBackspace={handleBackspace} onClear={handleClear} />
@@ -201,6 +201,10 @@ const LoginPage: React.FC<{ onLoginSuccess: (worker: Worker) => void }> = ({ onL
             <footer className="text-center p-4 text-sm text-gray-500 mt-8">
                 <p>&copy; {new Date().getFullYear()} Izanagi Sales System. Todos los derechos reservados.</p>
             </footer>
+            <style>{`
+              .touch-manipulation { touch-action: manipulation; }
+              .no-hover:hover { background: none !important; filter: none !important; }
+            `}</style>
         </div>
     );
 };

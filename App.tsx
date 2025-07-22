@@ -14,6 +14,7 @@ import AIAssistantPage from './pages/AIAssistantPage';
 import LoginPage from './pages/LoginPage';
 import { PayrollPage } from './pages/PayrollPage';
 import { Button, Icon } from './components/ui';
+import MobileNavDrawer from './components/MobileNavDrawer';
 
 const loadAndMigrateState = (): AppState => {
   try {
@@ -81,7 +82,6 @@ const App: React.FC = () => {
   const [state, setState] = useState<AppState>(loadAndMigrateState);
   const [currentUser, setCurrentUser] = useState<Worker | null>(null);
   const [notification, setNotification] = useState<{ title: string; message: string; isError: boolean; visible: boolean } | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -170,6 +170,13 @@ const App: React.FC = () => {
     <DataContext.Provider value={contextValue}>
       <div className="flex flex-col min-h-screen bg-dark-bg">
         <header className="bg-primary shadow-lg sticky top-0 z-40 p-4 lg:px-6 lg:py-0 lg:h-auto lg:min-h-[70px] flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-0">
+        {/* Menú hamburguesa y drawer solo en móvil */}
+        <MobileNavDrawer
+          activePage={activePage}
+          setActivePage={setActivePage as any}
+          currentUser={currentUser ? { name: currentUser.name, role: currentUser.role } : null}
+          onLogout={handleLogout}
+        />
           <div className="flex items-center gap-4">
             <Icon name="fa-cash-register" className="text-accent text-3xl" />
             <div className="flex flex-col">
@@ -179,11 +186,6 @@ const App: React.FC = () => {
               <span className="text-xs mt-1 text-accent/80 italic font-medium drop-shadow-sm" style={{letterSpacing: '0.5px'}}>Creado por Isarias</span>
             </div>
           </div>
-          {/* Botón hamburguesa solo en móvil */}
-          <button className="lg:hidden flex items-center px-3 py-2 border rounded text-accent border-accent focus:outline-none" onClick={() => setDrawerOpen(true)} aria-label="Abrir menú">
-            <span className="sr-only">Abrir menú</span>
-            <svg className="fill-current h-6 w-6" viewBox="0 0 20 20"><path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/></svg>
-          </button>
           {/* Menú de navegación normal en desktop */}
           <div className="hidden lg:flex items-center gap-4 flex-wrap justify-center">
               <div className="flex items-center gap-4">
@@ -235,39 +237,6 @@ const App: React.FC = () => {
               </nav>
           </div>
         </header>
-        {/* Drawer lateral para móvil */}
-        {drawerOpen && (
-          <div className="fixed inset-0 z-50 flex">
-            <div className="bg-primary w-64 max-w-[80vw] h-full shadow-2xl flex flex-col p-6 gap-6 animate-slide-in">
-              <button className="self-end text-accent text-2xl mb-4" onClick={() => setDrawerOpen(false)} aria-label="Cerrar menú">&times;</button>
-              <nav>
-                <ul className="flex flex-col gap-4">
-                  {PAGES.map(({ id, label, icon, shortcut }) => (
-                    <li key={id}>
-                      <a
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); setActivePage(id); setDrawerOpen(false); }}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-lg transition-colors duration-200 ${activePage === id ? 'bg-accent/80 text-primary' : 'text-white hover:bg-accent/30 hover:text-primary'}`}
-                      >
-                        <Icon name={icon} />
-                        {label}
-                        {shortcut && <small className="ml-2 text-gray-400">({shortcut})</small>}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-            </div>
-            <div className="flex-1 bg-black/40" onClick={() => setDrawerOpen(false)} />
-            <style>{`
-              @keyframes slide-in {
-                from { transform: translateX(-100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-              }
-              .animate-slide-in { animation: slide-in 0.3s cubic-bezier(.4,0,.2,1) forwards; }
-            `}</style>
-          </div>
-        )}
         <main className="flex-1 p-2 sm:p-4 lg:p-8 max-w-screen-2xl w-full mx-auto space-y-4">
           {renderPage()}
         </main>

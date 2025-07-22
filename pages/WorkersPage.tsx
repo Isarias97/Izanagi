@@ -118,7 +118,7 @@ const WorkersPage: React.FC = () => {
             <CardContent>
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-semibold">Lista de Trabajadores</h3>
-                    <Button icon="fa-user-plus" onClick={handleOpenAddModal}>
+                    <Button icon="fa-user-plus" onClick={handleOpenAddModal} className="min-h-[44px] px-5 py-3 active:scale-95 touch-manipulation no-hover">
                         Agregar Trabajador
                     </Button>
                 </div>
@@ -151,7 +151,7 @@ const WorkersPage: React.FC = () => {
                     </Card>
                 </div>
 
-                <div className="overflow-x-auto rounded-lg border border-slate-700">
+                <div className="overflow-x-auto rounded-lg border border-slate-700 no-scrollbar">
                     <table className="w-full text-sm text-left text-gray-300 min-w-[600px]">
                         <thead className="text-xs text-gray-300 uppercase bg-secondary">
                             <tr>
@@ -168,7 +168,7 @@ const WorkersPage: React.FC = () => {
                                     </td>
                                 </tr>
                             ) : state.workers.map(w => (
-                                <tr key={w.id} className="border-b border-slate-700 hover:bg-slate-800/50">
+                                <tr key={w.id} className="border-b border-slate-700 bg-slate-900/30 active:scale-95 touch-manipulation no-hover">
                                     <td className="px-6 py-4 font-semibold">{w.name}</td>
                                     <td className="px-6 py-4">
                                         <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getRoleStyle(w.role)}`}>
@@ -177,8 +177,8 @@ const WorkersPage: React.FC = () => {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex gap-2 justify-end">
-                                            <Button variant="icon" onClick={() => handleOpenEditModal(w)}><Icon name="fa-edit"/></Button>
-                                            <Button variant="icon" className="bg-danger/30 hover:bg-danger/60" onClick={() => setDeletingWorker(w)}><Icon name="fa-trash"/></Button>
+                                            <Button variant="icon" onClick={() => handleOpenEditModal(w)} className="w-10 h-10 min-w-[44px] min-h-[44px] active:scale-95 touch-manipulation no-hover"><Icon name="fa-edit"/></Button>
+                                            <Button variant="icon" className="bg-danger/30 hover:bg-danger/60 w-10 h-10 min-w-[44px] min-h-[44px] active:scale-95 touch-manipulation no-hover" onClick={() => setDeletingWorker(w)}><Icon name="fa-trash"/></Button>
                                         </div>
                                     </td>
                                 </tr>
@@ -214,6 +214,12 @@ const WorkersPage: React.FC = () => {
                 </div>
             )}
        </Modal>
+       <style>{`
+         .touch-manipulation { touch-action: manipulation; }
+         .no-hover:hover { background: none !important; filter: none !important; }
+         .no-scrollbar::-webkit-scrollbar { display: none; }
+         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+       `}</style>
     </>
   );
 };

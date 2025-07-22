@@ -157,12 +157,12 @@ const ReportsPage: React.FC = () => {
         <Card>
             <CardHeader icon="fa-chart-line">Reportes y Finanzas</CardHeader>
             <CardContent className="space-y-8">
-                <div className="flex flex-wrap gap-2 mb-2 border-b border-slate-700">
-                    <button onClick={() => setActiveTab('sales')} className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition ${activeTab === 'sales' ? 'bg-accent text-white' : 'text-gray-400 hover:bg-slate-700'}`}>Ventas</button>
-                    <button onClick={() => setActiveTab('profits')} className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition ${activeTab === 'profits' ? 'bg-accent text-white' : 'text-gray-400 hover:bg-slate-700'}`}>Ganancias</button>
-                    <button onClick={() => setActiveTab('transactions')} className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition ${activeTab === 'transactions' ? 'bg-accent text-white' : 'text-gray-400 hover:bg-slate-700'}`}>Transacciones</button>
-                    <button onClick={() => setActiveTab('capital')} className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition ${activeTab === 'capital' ? 'bg-accent text-white' : 'text-gray-400 hover:bg-slate-700'}`}>Capital</button>
-                    <button onClick={() => setActiveTab('audit')} className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition ${activeTab === 'audit' ? 'bg-accent text-white' : 'text-gray-400 hover:bg-slate-700'}`}>Auditoría</button>
+                <div className="flex flex-wrap gap-2 mb-2 border-b border-slate-700 overflow-x-auto no-scrollbar">
+                    <button onClick={() => setActiveTab('sales')} className={`px-4 py-3 text-base font-semibold rounded-t-lg transition min-w-[120px] min-h-[44px] active:scale-95 touch-manipulation no-hover ${activeTab === 'sales' ? 'bg-accent text-white shadow-md' : 'bg-secondary text-gray-300'}`}>Ventas</button>
+                    <button onClick={() => setActiveTab('profits')} className={`px-4 py-3 text-base font-semibold rounded-t-lg transition min-w-[120px] min-h-[44px] active:scale-95 touch-manipulation no-hover ${activeTab === 'profits' ? 'bg-accent text-white shadow-md' : 'bg-secondary text-gray-300'}`}>Ganancias</button>
+                    <button onClick={() => setActiveTab('transactions')} className={`px-4 py-3 text-base font-semibold rounded-t-lg transition min-w-[120px] min-h-[44px] active:scale-95 touch-manipulation no-hover ${activeTab === 'transactions' ? 'bg-accent text-white shadow-md' : 'bg-secondary text-gray-300'}`}>Transacciones</button>
+                    <button onClick={() => setActiveTab('capital')} className={`px-4 py-3 text-base font-semibold rounded-t-lg transition min-w-[120px] min-h-[44px] active:scale-95 touch-manipulation no-hover ${activeTab === 'capital' ? 'bg-accent text-white shadow-md' : 'bg-secondary text-gray-300'}`}>Capital</button>
+                    <button onClick={() => setActiveTab('audit')} className={`px-4 py-3 text-base font-semibold rounded-t-lg transition min-w-[120px] min-h-[44px] active:scale-95 touch-manipulation no-hover ${activeTab === 'audit' ? 'bg-accent text-white shadow-md' : 'bg-secondary text-gray-300'}`}>Auditoría</button>
                 </div>
 
                 {activeTab === 'sales' && (
@@ -198,7 +198,7 @@ const ReportsPage: React.FC = () => {
                                 </ResponsiveContainer>
                             ) : (<p className="text-gray-500">No hay datos para mostrar en este período.</p>)}
                         </div>
-                        <div className="overflow-x-auto rounded-lg border border-slate-700 max-h-[500px]">
+                        <div className="overflow-x-auto rounded-lg border border-slate-700 max-h-[500px] no-scrollbar">
                             <table className="w-full text-sm text-left text-gray-300 min-w-[900px]">
                                 <thead className="text-xs text-gray-300 uppercase bg-secondary sticky top-0">
                                     <tr><th scope="col" className="px-6 py-3">ID</th><th scope="col" className="px-6 py-3">Fecha</th><th scope="col" className="px-6 py-3">Items</th><th scope="col" className="px-6 py-3">Total (CUP)</th><th scope="col" className="px-6 py-3">Ganancia (CUP)</th><th scope="col" className="px-6 py-3">Pago</th><th scope="col" className="px-6 py-3">Vuelto (CUP)</th></tr>
@@ -208,7 +208,7 @@ const ReportsPage: React.FC = () => {
                                         const reportCost = r.items.reduce((sum, i) => sum + (i.costPrice * i.quantity), 0);
                                         const reportProfit = r.total - reportCost;
                                         return (
-                                            <tr key={r.id} className="border-b border-slate-700 hover:bg-slate-800/50">
+                                            <tr key={r.id} className="border-b border-slate-700 bg-slate-900/30 active:scale-95 touch-manipulation no-hover">
                                                 <td className="px-6 py-4">{r.id}</td><td className="px-6 py-4">{new Date(r.date).toLocaleString()}</td><td className="px-6 py-4">{r.itemsCount}</td><td className="px-6 py-4 font-semibold">${r.total.toFixed(2)}</td><td className={`px-6 py-4 font-semibold ${reportProfit >= 0 ? 'text-success' : 'text-danger'}`}>${reportProfit.toFixed(2)}</td><td className="px-6 py-4">{r.payment.currency} (${r.payment.amountPaid.toFixed(2)})</td><td className="px-6 py-4">${r.payment.changeInCup.toFixed(2)}</td>
                                             </tr>
                                         );
@@ -243,7 +243,7 @@ const ReportsPage: React.FC = () => {
                             <h3 className="text-lg font-semibold">Historial de Transacciones</h3>
                             <p className="text-sm text-gray-400">Todos los movimientos de fondos de la aplicación.</p>
                         </div>
-                        <div className="overflow-x-auto rounded-lg border border-slate-700 max-h-[70vh]">
+                        <div className="overflow-x-auto rounded-lg border border-slate-700 max-h-[70vh] no-scrollbar">
                              <table className="w-full text-sm text-left text-gray-300 min-w-[900px]">
                                 <thead className="text-xs text-gray-300 uppercase bg-secondary sticky top-0">
                                     <tr><th scope="col" className="px-6 py-3">Fecha</th><th scope="col" className="px-6 py-3">Tipo</th><th scope="col" className="px-6 py-3">Descripción</th><th scope="col" className="px-6 py-3 text-right">Monto (CUP)</th><th scope="col" className="px-6 py-3 text-right">Saldo Inversión</th><th scope="col" className="px-6 py-3 text-right">Saldo Pagos</th></tr>
@@ -252,7 +252,7 @@ const ReportsPage: React.FC = () => {
                                     {[...state.transactionLog].reverse().map(log => {
                                         const typeStyle = getTransactionTypeStyle(log.type);
                                         return (
-                                            <tr key={log.id} className="border-b border-slate-700 hover:bg-slate-800/50">
+                                            <tr key={log.id} className="border-b border-slate-700 bg-slate-900/30 active:scale-95 touch-manipulation no-hover">
                                                 <td className="px-6 py-4 whitespace-nowrap">{new Date(log.date).toLocaleString()}</td>
                                                 <td className={`px-6 py-4 font-semibold whitespace-nowrap ${typeStyle.color}`}><Icon name={typeStyle.icon} className="mr-2"/>{typeStyle.label}</td>
                                                 <td className="px-6 py-4">{log.description}</td>
@@ -317,7 +317,7 @@ const ReportsPage: React.FC = () => {
                             <h3 className="text-lg font-semibold">Historial de Cierres de Caja</h3>
                             <p className="text-sm text-gray-400">Registro de todas las auditorías y discrepancias.</p>
                         </div>
-                        <div className="overflow-x-auto rounded-lg border border-slate-700 max-h-[70vh]">
+                        <div className="overflow-x-auto rounded-lg border border-slate-700 max-h-[70vh] no-scrollbar">
                              <table className="w-full text-sm text-left text-gray-300 min-w-[900px]">
                                 <thead className="text-xs text-gray-300 uppercase bg-secondary sticky top-0">
                                     <tr>
@@ -330,7 +330,7 @@ const ReportsPage: React.FC = () => {
                                 </thead>
                                 <tbody>
                                     {[...state.auditReports].reverse().map((report: AuditReport) => (
-                                        <tr key={report.id} className="border-b border-slate-700 hover:bg-slate-800/50">
+                                        <tr key={report.id} className="border-b border-slate-700 bg-slate-900/30 active:scale-95 touch-manipulation no-hover">
                                             <td className="px-6 py-4 whitespace-nowrap">{new Date(report.date).toLocaleString()}</td>
                                             <td className="px-6 py-4 font-semibold">{report.closedByWorkerName}</td>
                                             <td className="px-6 py-4 text-right"><DiscrepancyDisplay value={report.discrepancies.diffCUP} /></td>
@@ -345,6 +345,12 @@ const ReportsPage: React.FC = () => {
                 )}
 
             </CardContent>
+            <style>{`
+              .touch-manipulation { touch-action: manipulation; }
+              .no-hover:hover { background: none !important; filter: none !important; }
+              .no-scrollbar::-webkit-scrollbar { display: none; }
+              .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            `}</style>
         </Card>
     );
 };

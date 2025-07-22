@@ -160,7 +160,7 @@ export const PayrollPage: React.FC = () => {
                             <p className="text-xs text-gray-500 mb-6">Este es el 40% acumulado de las ganancias de todas las ventas.</p>
                             <Button 
                                 icon="fa-cogs" 
-                                className="w-full justify-center" 
+                                className="w-full justify-center min-h-[44px] text-base py-3 active:scale-95 touch-manipulation no-hover" 
                                 onClick={() => setIsModalOpen(true)}
                                 disabled={state.workerPayoutBalance <= 0}
                             >
@@ -180,7 +180,7 @@ export const PayrollPage: React.FC = () => {
                             ) : (
                                 <div className="space-y-4">
                                     {[...state.payrollReports].reverse().map(report => (
-                                        <details key={report.id} className="bg-slate-800/60 rounded-lg p-4">
+                                        <details key={report.id} className="bg-slate-800/60 rounded-lg p-4 active:scale-95 touch-manipulation no-hover">
                                             <summary className="font-bold cursor-pointer flex justify-between">
                                                 <span>Nómina #{report.id} - {new Date(report.date).toLocaleDateString()}</span>
                                                 <span className="text-accent">{report.totalPayoutFund.toFixed(2)} CUP</span>
@@ -229,7 +229,7 @@ export const PayrollPage: React.FC = () => {
                     </div>
                     
                     <h4 className="font-bold pt-2">Desglose por Trabajador</h4>
-                    <div className="overflow-x-auto rounded-lg border border-slate-700 max-h-[40vh]">
+                    <div className="overflow-x-auto rounded-lg border border-slate-700 max-h-[40vh] no-scrollbar">
                         <table className="w-full text-sm">
                             <thead className="bg-secondary text-left sticky top-0">
                                 <tr>
@@ -257,8 +257,8 @@ export const PayrollPage: React.FC = () => {
                         El Pago Bruto se calcula basado en la contribución de cada trabajador a las ganancias del período. Las deducciones corresponden a faltantes de caja registrados.
                     </p>
                     <div className="flex justify-end gap-4 pt-4">
-                        <Button onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-                        <Button variant="success" icon="fa-check" onClick={handleProcessPayroll}>
+                        <Button onClick={() => setIsModalOpen(false)} className="min-h-[44px] px-5 py-3 active:scale-95 touch-manipulation no-hover">Cancelar</Button>
+                        <Button variant="success" icon="fa-check" onClick={handleProcessPayroll} className="min-h-[44px] px-5 py-3 active:scale-95 touch-manipulation no-hover">
                             Confirmar y Pagar
                         </Button>
                     </div>
