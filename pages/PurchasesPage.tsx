@@ -400,14 +400,14 @@ const PurchasesPage: React.FC = () => {
                                 <span className="text-xl font-bold">Costo Total:</span>
                                 <span className="text-2xl font-bold text-accent">${totalCost.toFixed(2)} CUP</span>
                             </div>
-                             <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-lg transition-colors duration-300 ${hasInsufficientFunds ? 'bg-red-900/30' : 'bg-slate-800'}`}> 
+                             <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-lg transition-colors duration-300 ${hasInsufficientFunds ? 'bg-red-900/30' : 'bg-slate-800'}`}>
                                 <div className='mb-2 sm:mb-0'>
                                     <p className="text-sm text-gray-400">Saldo de Inversión Actual</p>
                                     <p className="text-lg font-semibold">${state.investmentBalance.toFixed(2)}</p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-400 text-left sm:text-right">Saldo Restante Post-Compra</p>
-                                    <p className={`text-lg font-bold ${hasInsufficientFunds ? 'text-danger' : 'text-success'}`}> 
+                                    <p className={`text-lg font-bold ${hasInsufficientFunds ? 'text-danger' : 'text-success'}`}>
                                         ${remainingBalance.toFixed(2)}
                                     </p>
                                 </div>

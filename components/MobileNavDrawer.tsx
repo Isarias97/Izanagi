@@ -70,7 +70,9 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({ activePage, setActive
   // Navegación segura: cambiar página y cerrar drawer
   const handleNavClick = (page: string) => {
     setOpen(false);
-    setTimeout(() => setActivePage(page), 100); // Espera a que drawer cierre antes de cambiar página
+    setTimeout(() => {
+      if (page !== activePage) setActivePage(page);
+    }, 200); // Espera a que drawer cierre antes de cambiar página
   };
 
   return (
@@ -87,13 +89,13 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({ activePage, setActive
       />
       {/* Fondo semitransparente */}
       {open && (
-        <div className="fixed inset-0 bg-black/60 z-40 transition-opacity animate-fade-in" aria-label="Fondo del menú" />
+        <div className="fixed inset-0 bg-black/80 z-40 transition-opacity animate-fade-in" aria-label="Fondo del menú" />
       )}
       {/* Drawer lateral */}
       <nav
         ref={drawerRef}
         id="mobile-drawer"
-        className={`fixed top-0 left-0 h-full w-72 max-w-[90vw] bg-dark-card shadow-2xl z-50 transform transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${open ? 'translate-x-0' : '-translate-x-full'} lg:hidden flex flex-col outline-none`}
+        className={`fixed top-0 left-0 h-full w-72 max-w-[90vw] bg-dark-card/95 shadow-2xl z-50 transform transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${open ? 'translate-x-0' : '-translate-x-full'} lg:hidden flex flex-col outline-none`}
         aria-label="Menú principal"
         role="dialog"
         aria-modal="true"
@@ -102,7 +104,7 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({ activePage, setActive
         <div className="flex flex-col gap-6 p-6 pt-8 flex-1">
           {currentUser && (
             <div className="mb-4 flex items-center gap-3">
-              <Icon name="fa-user-circle" className="text-3xl text-accent" />
+              <Icon name="fa-user-circle" className="text-4xl text-accent" />
               <div>
                 <div className="font-bold text-white text-lg">{currentUser.name}</div>
                 <div className="text-xs text-gray-400">{currentUser.role}</div>
@@ -114,19 +116,19 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({ activePage, setActive
               <li key={link.page}>
                 <button
                   ref={i === 0 ? firstLinkRef : undefined}
-                  className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent active:scale-95 touch-manipulation ${activePage === link.page ? 'bg-accent text-primary' : 'text-white'} no-hover`}
+                  className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent active:scale-97 touch-manipulation ${activePage === link.page ? 'bg-white text-primary shadow-lg' : 'bg-black/10 text-white'} no-hover`}
                   onClick={() => handleNavClick(link.page)}
                   aria-current={activePage === link.page ? 'page' : undefined}
                   onTouchStart={handleButtonTouch}
                 >
-                  <Icon name={link.icon} className="text-xl" />
+                  <Icon name={link.icon} className="text-2xl" />
                   {link.label}
                 </button>
               </li>
             ))}
           </ul>
           <div className="mt-auto pt-8">
-            <Button variant="danger" icon="fa-sign-out-alt" className="w-full" onClick={() => { setOpen(false); onLogout(); }} onTouchStart={handleButtonTouch}>
+            <Button variant="danger" icon="fa-sign-out-alt" className="w-full py-4 text-lg rounded-2xl" onClick={() => { setOpen(false); onLogout(); }} onTouchStart={handleButtonTouch}>
               Cerrar sesión
             </Button>
           </div>

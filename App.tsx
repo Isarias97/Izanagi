@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Page, AppState, Category, Product, SaleReport, SaleItem, Worker, AuditReport, TransactionLogEntry } from './types';
-import { PAGES } from './constants';
 import { getInitialState } from './state';
 import { DataContext } from './context';
 import PosPage from './pages/PosPage';
@@ -13,7 +12,7 @@ import WorkersPage from './pages/WorkersPage';
 import AIAssistantPage from './pages/AIAssistantPage';
 import LoginPage from './pages/LoginPage';
 import { PayrollPage } from './pages/PayrollPage';
-import { Button, Icon } from './components/ui';
+import { Icon } from './components/ui';
 import MobileNavDrawer from './components/MobileNavDrawer';
 
 const loadAndMigrateState = (): AppState => {
@@ -169,38 +168,39 @@ const App: React.FC = () => {
   return (
     <DataContext.Provider value={contextValue}>
       <div className="flex flex-col min-h-screen bg-dark-bg">
-        <header className="bg-primary shadow-lg sticky top-0 z-40 p-3 flex flex-row items-center justify-between gap-2 min-h-[56px]">
-          {/* Menú hamburguesa y drawer solo en móvil */}
+        <header className="bg-primary shadow-lg sticky top-0 z-40 p-2 flex flex-row items-center justify-between gap-2 min-h-[56px]">
           <MobileNavDrawer
             activePage={activePage}
-            setActivePage={setActivePage as any}
+            setActivePage={(page: string) => {
+              if (page !== activePage) setActivePage(page as Page);
+            }}
             currentUser={currentUser ? { name: currentUser.name, role: currentUser.role } : null}
             onLogout={handleLogout}
           />
           {/* Logo y título */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Icon name="fa-cash-register" className="text-accent text-2xl flex-shrink-0" />
+            <Icon name="fa-cash-register" className="text-accent text-xl flex-shrink-0" />
             <div className="flex flex-col min-w-0">
-              <h1 className="text-base font-semibold text-white truncate">
+              <h1 className="text-sm font-semibold text-white truncate">
                 Izanagi <span className="text-xs bg-accent text-primary font-bold py-0.5 px-2 rounded-full ml-1">CUP</span>
               </h1>
-              <span className="text-xs mt-0.5 text-accent/80 italic font-medium drop-shadow-sm hidden sm:block" style={{letterSpacing: '0.5px'}}>by Isarias</span>
+              <span className="text-[10px] mt-0.5 text-accent/80 italic font-medium drop-shadow-sm hidden sm:block" style={{letterSpacing: '0.5px'}}>by Isarias</span>
             </div>
           </div>
           {/* Info usuario y saldos en móvil */}
-          <div className="flex flex-col items-end gap-1 text-right flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <Icon name="fa-wallet" className="text-accent text-lg" />
-              <span className="text-xs text-white font-bold">{state.investmentBalance.toFixed(2)} CUP</span>
+          <div className="flex flex-col items-end gap-0.5 text-right flex-shrink-0 min-w-[110px]">
+            <div className="flex items-center gap-1">
+              <Icon name="fa-wallet" className="text-accent text-base" />
+              <span className="text-[11px] text-white font-bold">{state.investmentBalance.toFixed(2)} CUP</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Icon name="fa-users" className="text-accent text-lg" />
-              <span className="text-xs text-white font-bold">{state.workerPayoutBalance.toFixed(2)} CUP</span>
+            <div className="flex items-center gap-1">
+              <Icon name="fa-users" className="text-accent text-base" />
+              <span className="text-[11px] text-white font-bold">{state.workerPayoutBalance.toFixed(2)} CUP</span>
             </div>
-            <div className="flex items-center gap-2 mt-1">
-              <Icon name="fa-user-circle" className="text-accent text-base" />
-              <span className="text-xs text-white font-semibold truncate max-w-[80px]">{currentUser?.name}</span>
-              <span className="text-[10px] text-gray-300 font-medium">{currentUser?.role}</span>
+            <div className="flex items-center gap-1 mt-0.5">
+              <Icon name="fa-user-circle" className="text-accent text-sm" />
+              <span className="text-[11px] text-white font-semibold truncate max-w-[60px]">{currentUser?.name}</span>
+              <span className="text-[9px] text-gray-300 font-medium">{currentUser?.role}</span>
             </div>
           </div>
         </header>
