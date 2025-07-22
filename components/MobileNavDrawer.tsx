@@ -67,6 +67,12 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({ activePage, setActive
     setTimeout(() => btn.classList.remove('touch-feedback'), 200);
   };
 
+  // Navegación segura: cambiar página y cerrar drawer
+  const handleNavClick = (page: string) => {
+    setOpen(false);
+    setTimeout(() => setActivePage(page), 100); // Espera a que drawer cierre antes de cambiar página
+  };
+
   return (
     <>
       {/* Botón hamburguesa fijo */}
@@ -109,7 +115,7 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({ activePage, setActive
                 <button
                   ref={i === 0 ? firstLinkRef : undefined}
                   className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent active:scale-95 touch-manipulation ${activePage === link.page ? 'bg-accent text-primary' : 'text-white'} no-hover`}
-                  onClick={() => { setActivePage(link.page); setOpen(false); }}
+                  onClick={() => handleNavClick(link.page)}
                   aria-current={activePage === link.page ? 'page' : undefined}
                   onTouchStart={handleButtonTouch}
                 >

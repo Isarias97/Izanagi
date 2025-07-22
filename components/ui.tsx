@@ -79,10 +79,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const baseClasses = "font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-bg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none active:scale-95 select-none min-h-[48px] min-w-[48px] text-base md:text-lg shadow-md border-2 border-transparent touch-manipulation no-hover";
     
     const variantClasses = {
-      primary: "bg-primary text-white border-accent hover:bg-accent hover:text-primary focus:bg-accent focus:text-primary",
-      danger: "bg-danger text-white border-danger hover:bg-white hover:text-danger focus:bg-white focus:text-danger",
-      success: "bg-success text-white border-success hover:bg-white hover:text-success focus:bg-white focus:text-success",
-      icon: "bg-accent text-primary w-12 h-12 flex items-center justify-center border-accent hover:bg-primary hover:text-accent focus:bg-primary focus:text-accent",
+      primary: "bg-primary text-white border-accent hover:bg-primary/90 hover:text-white focus:bg-primary/80 focus:text-white",
+      danger: "bg-danger text-white border-danger hover:bg-danger/90 hover:text-white focus:bg-danger/80 focus:text-white",
+      success: "bg-success text-white border-success hover:bg-success/90 hover:text-white focus:bg-success/80 focus:text-white",
+      icon: "bg-accent text-primary w-12 h-12 flex items-center justify-center border-accent hover:bg-accent/80 hover:text-primary focus:bg-accent/70 focus:text-primary",
     };
 
     return (

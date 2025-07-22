@@ -169,72 +169,39 @@ const App: React.FC = () => {
   return (
     <DataContext.Provider value={contextValue}>
       <div className="flex flex-col min-h-screen bg-dark-bg">
-        <header className="bg-primary shadow-lg sticky top-0 z-40 p-4 lg:px-6 lg:py-0 lg:h-auto lg:min-h-[70px] flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-0">
-        {/* Menú hamburguesa y drawer solo en móvil */}
-        <MobileNavDrawer
-          activePage={activePage}
-          setActivePage={setActivePage as any}
-          currentUser={currentUser ? { name: currentUser.name, role: currentUser.role } : null}
-          onLogout={handleLogout}
-        />
-          <div className="flex items-center gap-4">
-            <Icon name="fa-cash-register" className="text-accent text-3xl" />
-            <div className="flex flex-col">
-              <h1 className="text-xl font-semibold text-white">
-                Sistema Izanagi <span className="text-xs bg-accent text-white font-bold py-1 px-2 rounded-full ml-1">CUP</span>
+        <header className="bg-primary shadow-lg sticky top-0 z-40 p-3 flex flex-row items-center justify-between gap-2 min-h-[56px]">
+          {/* Menú hamburguesa y drawer solo en móvil */}
+          <MobileNavDrawer
+            activePage={activePage}
+            setActivePage={setActivePage as any}
+            currentUser={currentUser ? { name: currentUser.name, role: currentUser.role } : null}
+            onLogout={handleLogout}
+          />
+          {/* Logo y título */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Icon name="fa-cash-register" className="text-accent text-2xl flex-shrink-0" />
+            <div className="flex flex-col min-w-0">
+              <h1 className="text-base font-semibold text-white truncate">
+                Izanagi <span className="text-xs bg-accent text-primary font-bold py-0.5 px-2 rounded-full ml-1">CUP</span>
               </h1>
-              <span className="text-xs mt-1 text-accent/80 italic font-medium drop-shadow-sm" style={{letterSpacing: '0.5px'}}>Creado por Isarias</span>
+              <span className="text-xs mt-0.5 text-accent/80 italic font-medium drop-shadow-sm hidden sm:block" style={{letterSpacing: '0.5px'}}>by Isarias</span>
             </div>
           </div>
-          {/* Menú de navegación normal en desktop */}
-          <div className="hidden lg:flex items-center gap-4 flex-wrap justify-center">
-              <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-3 text-white bg-black/20 px-4 py-2 rounded-lg">
-                      <Icon name="fa-wallet" className="text-accent text-lg" />
-                      <div>
-                          <span className="text-xs text-gray-400 block">Saldo Inversión</span>
-                          <span className="font-semibold text-base">{state.investmentBalance.toFixed(2)} CUP</span>
-                      </div>
-                  </div>
-                   <div className="flex items-center gap-3 text-white bg-black/20 px-4 py-2 rounded-lg">
-                      <Icon name="fa-users" className="text-accent text-lg" />
-                      <div>
-                          <span className="text-xs text-gray-400 block">Fondo de Pago</span>
-                          <span className="font-semibold text-base">{state.workerPayoutBalance.toFixed(2)} CUP</span>
-                      </div>
-                  </div>
-              </div>
-
-              {currentUser && (
-                <div className="flex items-center gap-3 bg-black/20 px-4 py-2 rounded-lg">
-                    <Icon name="fa-user-circle" className="text-accent text-xl" />
-                    <div>
-                        <span className="text-xs text-gray-400 block">{currentUser.role}</span>
-                        <span className="font-semibold text-base">{currentUser.name}</span>
-                    </div>
-                    <Button variant="icon" className="bg-danger/30 hover:bg-danger/60 !w-9 !h-9" onClick={handleLogout} title="Cerrar Sesión">
-                        <Icon name="fa-sign-out-alt" />
-                    </Button>
-                </div>
-              )}
-
-              <nav>
-                <ul className="flex flex-wrap justify-center items-center gap-2">
-                  {PAGES.map(({ id, label, icon, shortcut }) => (
-                    <li key={id}>
-                      <a
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); setActivePage(id); }}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors duration-200 ${activePage === id ? 'bg-black/20 text-white' : 'text-gray-300 hover:bg-black/20 hover:text-white'}`}
-                      >
-                        <Icon name={icon} />
-                        {label}
-                        {shortcut && <small className="hidden md:inline text-gray-400">({shortcut})</small>}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
+          {/* Info usuario y saldos en móvil */}
+          <div className="flex flex-col items-end gap-1 text-right flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <Icon name="fa-wallet" className="text-accent text-lg" />
+              <span className="text-xs text-white font-bold">{state.investmentBalance.toFixed(2)} CUP</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Icon name="fa-users" className="text-accent text-lg" />
+              <span className="text-xs text-white font-bold">{state.workerPayoutBalance.toFixed(2)} CUP</span>
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <Icon name="fa-user-circle" className="text-accent text-base" />
+              <span className="text-xs text-white font-semibold truncate max-w-[80px]">{currentUser?.name}</span>
+              <span className="text-[10px] text-gray-300 font-medium">{currentUser?.role}</span>
+            </div>
           </div>
         </header>
         <main className="flex-1 p-2 sm:p-4 lg:p-8 max-w-screen-2xl w-full mx-auto space-y-4">

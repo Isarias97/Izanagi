@@ -17,33 +17,47 @@ export default defineConfig(({ mode }) => {
       plugins: [
         VitePWA({
           registerType: 'autoUpdate',
-          includeAssets: ['favicon.ico'],
-          manifest: {
-            name: 'Izanagi Sales System',
-            short_name: 'Izanagi',
-            description: 'Sistema de ventas optimizado para móviles y PWA.',
-            start_url: '/',
-            display: 'standalone',
-            background_color: '#002A8F',
-            theme_color: '#CF142B',
-            orientation: 'portrait',
-            icons: [
+          includeAssets: ['favicon.ico', 'icon-192.png', 'icon-512.png', 'icon-maskable.png'],
+          manifest: false, // Usar manifest.json externo
+          strategies: 'generateSW',
+          workbox: {
+            globPatterns: ['**/*.{js,css,html,ico,png,svg,json,webmanifest}'],
+            navigateFallback: '/index.html',
+            runtimeCaching: [
               {
-                src: 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 192 192\'><rect width=\'192\' height=\'192\' fill=\'%23002A8F\'/><circle cx=\'96\' cy=\'96\' r=\'70\' fill=\'%23CF142B\'/><text x=\'50%\' y=\'58%\' font-size=\'72\' text-anchor=\'middle\' fill=\'white\' font-family=\'Segoe UI,Arial,sans-serif\'>I</text></svg>',
-                sizes: '192x192',
-                type: 'image/svg+xml',
-                purpose: 'any maskable'
+                urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\//,
+                handler: 'CacheFirst',
+                options: {
+                  cacheName: 'google-fonts',
+                  expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+                },
               },
               {
-                src: 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 512 512\'><rect width=\'512\' height=\'512\' fill=\'%23002A8F\'/><circle cx=\'256\' cy=\'256\' r=\'200\' fill=\'%23CF142B\'/><text x=\'50%\' y=\'58%\' font-size=\'200\' text-anchor=\'middle\' fill=\'white\' font-family=\'Segoe UI,Arial,sans-serif\'>I</text></svg>',
-                sizes: '512x512',
-                type: 'image/svg+xml',
-                purpose: 'any maskable'
+                urlPattern: /^https?:\/\/.*\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/, 
+                handler: 'CacheFirst',
+                options: {
+                  cacheName: 'images',
+                  expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
+                },
+              },
+              {
+                urlPattern: /^https?:\/\/.*\.(?:js|css)$/, 
+                handler: 'StaleWhileRevalidate',
+                options: {
+                  cacheName: 'static-resources',
+                  expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
+                },
+              },
+              {
+                urlPattern: /^https?:\/\/.*\/api\//, 
+                handler: 'NetworkFirst',
+                options: {
+                  cacheName: 'api',
+                  networkTimeoutSeconds: 10,
+                  expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 },
+                },
               }
             ]
-          },
-          workbox: {
-            globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
           },
           devOptions: {
             enabled: true

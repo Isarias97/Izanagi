@@ -1,12 +1,13 @@
 {
   "name": "Izanagi Sales System",
   "short_name": "Izanagi",
-  "description": "Sistema de ventas optimizado para móviles y PWA.",
+  "description": "Sistema de ventas, inventario y gestión para negocios modernos. Rápido, seguro y optimizado para móvil. Experiencia PWA fullscreen.",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#002A8F",
-  "theme_color": "#CF142B",
-  "orientation": "portrait",
+  "theme_color": "#002A8F",
+  "orientation": "portrait-primary",
+  "scope": "/",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -24,5 +25,25 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "TPV (POS)",
+      "short_name": "TPV",
+      "description": "Ir directamente al punto de venta",
+      "url": "/#pos",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Inventario",
+      "short_name": "Inventario",
+      "description": "Gestionar inventario",
+      "url": "/#inventory",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    { "src": "/screenshot-1.png", "sizes": "540x960", "type": "image/png" },
+    { "src": "/screenshot-2.png", "sizes": "540x960", "type": "image/png" }
   ]
 } 
