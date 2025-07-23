@@ -76,7 +76,24 @@ const loadAndMigrateState = (): AppState => {
   }
 };
 
-const PAGE_TO_PATH = {
+interface AppRoutesProps {
+  state: AppState;
+  setState: React.Dispatch<React.SetStateAction<AppState>>;
+  currentUser: Worker | null;
+  setCurrentUser: React.Dispatch<React.SetStateAction<Worker | null>>;
+  notification: { title: string; message: string; isError: boolean; visible: boolean } | null;
+  setNotification: React.Dispatch<React.SetStateAction<{ title: string; message: string; isError: boolean; visible: boolean } | null>>;
+  showNotification: (title: string, message: string, isError?: boolean) => void;
+  handleLogout: () => void;
+  showInstallBanner: boolean;
+  setShowInstallBanner: React.Dispatch<React.SetStateAction<boolean>>;
+  deferredPrompt: React.MutableRefObject<any>;
+  footerVisible: boolean;
+  setFooterVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  handleInstallClick: () => void;
+}
+
+const PAGE_TO_PATH: Record<string, string> = {
   POS: '/',
   Purchases: '/compras',
   Inventory: '/inventario',
@@ -86,7 +103,7 @@ const PAGE_TO_PATH = {
   AI: '/ai',
   Config: '/config',
 };
-const PATH_TO_PAGE = {
+const PATH_TO_PAGE: Record<string, string> = {
   '/': 'POS',
   '/compras': 'Purchases',
   '/inventario': 'Inventory',
@@ -112,10 +129,10 @@ function AppRoutes({
   footerVisible,
   setFooterVisible,
   handleInstallClick,
-}) {
+}: AppRoutesProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [activePage, setActivePage] = useState(() => {
+  const [activePage, setActivePage] = useState<string>(() => {
     return PATH_TO_PAGE[location.pathname] || 'POS';
   });
 
@@ -129,7 +146,7 @@ function AppRoutes({
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const activeElement = document.activeElement as HTMLElement;
     const isInputFocused = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA';
-    const shortcutMap = {
+    const shortcutMap: Record<string, string> = {
       'F1': 'POS',
       'F2': 'Purchases',
       'F3': 'Inventory',
@@ -158,7 +175,7 @@ function AppRoutes({
     state,
     setState,
     showNotification,
-    setActivePage: (page) => setActivePage(page),
+    setActivePage: (page: string) => setActivePage(page),
     currentUser,
     logout: handleLogout,
   }), [state, showNotification, setActivePage, currentUser, handleLogout]);
@@ -167,7 +184,7 @@ function AppRoutes({
     return (
       <DataContext.Provider value={contextValue}>
         <Routes>
-          <Route path="*" element={<LoginPage onLoginSuccess={(worker) => {
+          <Route path="*" element={<LoginPage onLoginSuccess={(worker: Worker) => {
             setCurrentUser(worker);
             setActivePage('POS');
             showNotification('¡Bienvenido!', `Has iniciado sesión como ${worker.name}.`);
@@ -191,7 +208,7 @@ function AppRoutes({
         <header className="bg-primary shadow-lg sticky top-0 z-40 p-2 flex flex-row items-center justify-between gap-2 min-h-[56px] w-full max-w-screen-xl mx-auto">
           <MobileNavDrawer
             activePage={activePage}
-            setActivePage={(page) => setActivePage(page)}
+            setActivePage={(page: string) => setActivePage(page)}
             currentUser={currentUser ? { name: currentUser.name, role: currentUser.role } : null}
             onLogout={handleLogout}
           />
