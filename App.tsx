@@ -290,9 +290,32 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : null;
   });
   const [notification, setNotification] = useState<{ title: string; message: string; isError: boolean; visible: boolean } | null>(null);
-  const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [showInstallBanner, setShowInstallBanner] = useState(true); // Siempre true por defecto
   const deferredPrompt = useRef<any>(null);
   const [footerVisible, setFooterVisible] = useState(true);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
+
+  // Detectar si la app ya está instalada (PWA)
+  useEffect(() => {
+    const checkInstalled = () => {
+      // iOS
+      const isInStandaloneMode = () =>
+        'standalone' in window.navigator && (window.navigator as any).standalone;
+      // Android/otros
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+      setIsAppInstalled(isInStandaloneMode() || isPWA);
+    };
+    checkInstalled();
+    window.addEventListener('appinstalled', checkInstalled);
+    window.matchMedia('(display-mode: standalone)').addEventListener('change', checkInstalled);
+    return () => {
+      window.removeEventListener('appinstalled', checkInstalled);
+      window.matchMedia('(display-mode: standalone)').removeEventListener('change', checkInstalled);
+    };
+  }, []);
+
+  // Detectar si es móvil
+  const isMobile = /android|iphone|ipad|ipod|opera mini|iemobile|mobile/i.test(navigator.userAgent);
 
   useEffect(() => {
     try {
@@ -401,6 +424,14 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
+      {/* Banner de instalación PWA solo en móvil y si no está instalada */}
+      {isMobile && !isAppInstalled && showInstallBanner && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] bg-primary text-white rounded-xl shadow-2xl px-6 py-4 flex items-center gap-4 animate-fade-in" style={{maxWidth:'95vw'}}>
+          <span className="text-lg font-semibold"><i className="fas fa-download mr-2"/>Instala Izanagi en tu móvil</span>
+          <button className="ml-4 px-4 py-2 rounded-lg bg-accent text-primary font-bold shadow hover:bg-white/90 transition" onClick={handleInstallClick}>Instalar</button>
+          <button className="ml-2 text-white/80 hover:text-white text-xl" aria-label="Cerrar" onClick={()=>setShowInstallBanner(false)}>&times;</button>
+        </div>
+      )}
       <AppRoutes
         state={state}
         setState={setState}
