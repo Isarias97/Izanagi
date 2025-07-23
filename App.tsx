@@ -120,12 +120,10 @@ function AppRoutes({
   currentUser,
   setCurrentUser,
   notification,
-  setNotification,
   showNotification,
   handleLogout,
   showInstallBanner,
   setShowInstallBanner,
-  deferredPrompt,
   footerVisible,
   setFooterVisible,
   handleInstallClick,
@@ -286,7 +284,6 @@ function AppRoutes({
 
 // App principal con BrowserRouter
 const App: React.FC = () => {
-  const [activePage, setActivePage] = useState<Page>(Page.POS);
   const [state, setState] = useState<AppState>(loadAndMigrateState);
   const [currentUser, setCurrentUser] = useState<Worker | null>(null);
   const [notification, setNotification] = useState<{ title: string; message: string; isError: boolean; visible: boolean } | null>(null);
@@ -315,7 +312,7 @@ const App: React.FC = () => {
 
   const handleLoginSuccess = (worker: Worker) => {
     setCurrentUser(worker);
-    setActivePage(Page.POS); // Default page after login
+    // setActivePage(Page.POS); // Default page after login - REMOVED
     showNotification('¡Bienvenido!', `Has iniciado sesión como ${worker.name}.`);
   };
   
@@ -335,7 +332,7 @@ const App: React.FC = () => {
 
     if (shortcutMap[e.key] && !isInputFocused) {
         e.preventDefault();
-        setActivePage(shortcutMap[e.key]);
+        // setActivePage(shortcutMap[e.key]); // REMOVED
     }
   }, []);
 
@@ -350,24 +347,10 @@ const App: React.FC = () => {
     state,
     setState,
     showNotification,
-    setActivePage,
+    // setActivePage, // REMOVED
     currentUser,
     logout: handleLogout,
-  }), [state, showNotification, setActivePage, currentUser, handleLogout]);
-
-  const renderPage = () => {
-    switch (activePage) {
-      case Page.POS: return <PosPage />;
-      case Page.Purchases: return <PurchasesPage />;
-      case Page.Inventory: return <InventoryPage />;
-      case Page.Reports: return <ReportsPage />;
-      case Page.Payroll: return <PayrollPage />;
-      case Page.Workers: return <WorkersPage />;
-      case Page.AI: return <AIAssistantPage />;
-      case Page.Config: return <ConfigPage />;
-      default: return <PosPage />;
-    }
-  };
+  }), [state, showNotification, currentUser, handleLogout]);
 
   // Banner de instalación PWA
   useEffect(() => {
