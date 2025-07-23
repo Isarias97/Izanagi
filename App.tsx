@@ -154,8 +154,8 @@ function AppRoutes({
       'F7': 'AI',
     };
     if (shortcutMap[e.key] && !isInputFocused) {
-      e.preventDefault();
-      setActivePage(shortcutMap[e.key]);
+        e.preventDefault();
+        setActivePage(shortcutMap[e.key]);
     }
   }, []);
   useEffect(() => {
@@ -168,7 +168,7 @@ function AppRoutes({
     const page = PATH_TO_PAGE[location.pathname] || 'POS';
     setActivePage(page);
   }, [location.pathname]);
-
+  
   const contextValue = useMemo(() => ({
     state,
     setState,
@@ -398,6 +398,8 @@ const App: React.FC = () => {
         setShowInstallBanner(false);
         deferredPrompt.current = null;
       }
+    } else {
+      alert('La instalación no está disponible en este momento. Intenta refrescar la página o usa el menú del navegador.');
     }
   };
 
@@ -428,8 +430,17 @@ const App: React.FC = () => {
       {isMobile && !isAppInstalled && showInstallBanner && (
         <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] bg-primary text-white rounded-xl shadow-2xl px-6 py-4 flex items-center gap-4 animate-fade-in" style={{maxWidth:'95vw'}}>
           <span className="text-lg font-semibold"><i className="fas fa-download mr-2"/>Instala Izanagi en tu móvil</span>
-          <button className="ml-4 px-4 py-2 rounded-lg bg-accent text-primary font-bold shadow hover:bg-white/90 transition" onClick={handleInstallClick}>Instalar</button>
+          <button
+            className="ml-4 px-4 py-2 rounded-lg bg-accent text-primary font-bold shadow hover:bg-white/90 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            onClick={handleInstallClick}
+            disabled={!deferredPrompt.current}
+          >
+            Instalar
+          </button>
           <button className="ml-2 text-white/80 hover:text-white text-xl" aria-label="Cerrar" onClick={()=>setShowInstallBanner(false)}>&times;</button>
+          {!deferredPrompt.current && (
+            <span className="ml-4 text-xs text-accent bg-black/30 px-2 py-1 rounded">La instalación no está disponible en este momento. Intenta refrescar la página o usa el menú del navegador.</span>
+          )}
         </div>
       )}
       <AppRoutes
