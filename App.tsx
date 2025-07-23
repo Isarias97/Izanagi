@@ -285,7 +285,10 @@ function AppRoutes({
 // App principal con BrowserRouter
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(loadAndMigrateState);
-  const [currentUser, setCurrentUser] = useState<Worker | null>(null);
+  const [currentUser, setCurrentUser] = useState<Worker | null>(() => {
+    const saved = localStorage.getItem('izanagi_user');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [notification, setNotification] = useState<{ title: string; message: string; isError: boolean; visible: boolean } | null>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const deferredPrompt = useRef<any>(null);
@@ -308,11 +311,12 @@ const App: React.FC = () => {
 
   const handleLogout = useCallback(() => {
     setCurrentUser(null);
+    localStorage.removeItem('izanagi_user');
   }, []);
 
   const handleLoginSuccess = (worker: Worker) => {
     setCurrentUser(worker);
-    // setActivePage(Page.POS); // Default page after login - REMOVED
+    localStorage.setItem('izanagi_user', JSON.stringify(worker));
     showNotification('¡Bienvenido!', `Has iniciado sesión como ${worker.name}.`);
   };
   
