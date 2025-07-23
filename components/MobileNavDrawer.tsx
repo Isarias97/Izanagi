@@ -85,13 +85,18 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({ activePage, setActive
       {/* Botón hamburguesa fijo */}
       <Button
         variant="icon"
-        icon={open ? 'fa-times' : 'fa-bars'}
-        className="fixed top-3 left-3 z-50 bg-primary text-white shadow-lg lg:hidden focus:ring-2 focus:ring-accent w-12 h-12 sm:w-14 sm:h-14 transition-all duration-200"
+        className="fixed top-3 left-3 z-50 bg-primary text-white shadow-lg lg:hidden focus:ring-2 focus:ring-accent w-12 h-12 sm:w-14 sm:h-14 transition-all duration-200 flex items-center justify-center"
         aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
         aria-expanded={open}
         aria-controls="mobile-drawer"
         onClick={() => setOpen(o => !o)}
-      />
+      >
+        {open ? (
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M7 7L21 21M21 7L7 21" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
+        ) : (
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="5" y="8" width="18" height="2.5" rx="1.25" fill="currentColor"/><rect x="5" y="13" width="18" height="2.5" rx="1.25" fill="currentColor"/><rect x="5" y="18" width="18" height="2.5" rx="1.25" fill="currentColor"/></svg>
+        )}
+      </Button>
       {/* Fondo semitransparente */}
       {open && (
         <div className="fixed inset-0 bg-black/80 z-40 transition-opacity animate-fade-in" aria-label="Fondo del menú" />
