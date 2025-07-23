@@ -3,11 +3,13 @@ import { DataContext } from '../context';
 import { Card, CardHeader, CardContent, InputGroup, Input, Button, Select, Icon } from '../components/ui';
 import { Product } from '../types';
 import { DEFAULT_ICON } from '../constants';
+import Modal from '../components/Modal';
+import { AVAILABLE_ICONS } from '../constants';
 
 type InventoryTab = 'products' | 'categories';
 
 const InventoryPage: React.FC = () => {
-  const { state, showNotification } = useContext(DataContext);
+  const { state, setState, showNotification } = useContext(DataContext);
   const [activeTab, setActiveTab] = useState<InventoryTab>('products');
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,11 +17,85 @@ const InventoryPage: React.FC = () => {
   const [sort, setSort] = useState<{ key: keyof Product | 'categoryName', order: 'asc' | 'desc' }>({ key: 'name', order: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
   
+  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryIcon, setNewCategoryIcon] = useState(AVAILABLE_ICONS[0]);
+
+  const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null as null | { id: number; name: string; icon: string });
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [deletingCategory, setDeletingCategory] = useState(null as null | { id: number; name: string });
 
   const handleDeleteAttempt = (product: Product) => {
     if (product.stock > 0) {
       showNotification('Aviso', 'No se recomienda eliminar productos con stock. Considere poner el stock en 0.', true);
     }
+  };
+
+  const handleAddCategory = () => {
+    if (!newCategoryName.trim()) {
+      showNotification('Error', 'El nombre de la categoría no puede estar vacío.', true);
+      return;
+    }
+    if (state.categories.some(c => c.name.toLowerCase() === newCategoryName.trim().toLowerCase())) {
+      showNotification('Error', 'Ya existe una categoría con ese nombre.', true);
+      return;
+    }
+    const newId = state.categories.length > 0 ? Math.max(...state.categories.map(c => c.id)) + 1 : 1;
+    setState(prev => ({
+      ...prev,
+      categories: [...prev.categories, { id: newId, name: newCategoryName.trim(), icon: newCategoryIcon }]
+    }));
+    showNotification('Éxito', `Categoría "${newCategoryName.trim()}" agregada.`);
+    setIsAddCategoryModalOpen(false);
+    setNewCategoryName('');
+    setNewCategoryIcon(AVAILABLE_ICONS[0]);
+  };
+
+  const handleOpenEditCategory = (cat: { id: number; name: string; icon: string }) => {
+    setEditingCategory(cat);
+    setIsEditCategoryModalOpen(true);
+  };
+
+  const handleEditCategory = () => {
+    if (!editingCategory || !editingCategory.name.trim()) {
+      showNotification('Error', 'El nombre de la categoría no puede estar vacío.', true);
+      return;
+    }
+    if (state.categories.some(c => c.id !== editingCategory.id && c.name.toLowerCase() === editingCategory.name.trim().toLowerCase())) {
+      showNotification('Error', 'Ya existe una categoría con ese nombre.', true);
+      return;
+    }
+    setState(prev => ({
+      ...prev,
+      categories: prev.categories.map(c => c.id === editingCategory.id ? { ...c, name: editingCategory.name.trim(), icon: editingCategory.icon } : c)
+    }));
+    showNotification('Éxito', `Categoría "${editingCategory.name.trim()}" actualizada.`);
+    setIsEditCategoryModalOpen(false);
+    setEditingCategory(null);
+  };
+
+  const handleOpenDeleteCategory = (cat: { id: number; name: string }) => {
+    setDeletingCategory(cat);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteCategory = () => {
+    if (!deletingCategory) return;
+    // No permitir eliminar si hay productos asociados
+    if (state.products.some(p => p.categoryId === deletingCategory.id)) {
+      showNotification('Error', 'No se puede eliminar una categoría con productos asociados.', true);
+      setIsDeleteConfirmOpen(false);
+      setDeletingCategory(null);
+      return;
+    }
+    setState(prev => ({
+      ...prev,
+      categories: prev.categories.filter(c => c.id !== deletingCategory.id)
+    }));
+    showNotification('Éxito', `Categoría "${deletingCategory.name}" eliminada.`);
+    setIsDeleteConfirmOpen(false);
+    setDeletingCategory(null);
   };
 
   const filteredProducts = useMemo(() => {
@@ -184,7 +260,7 @@ const InventoryPage: React.FC = () => {
             <div className="space-y-6">
                  <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold">Categorías Existentes</h3>
-                    <Button icon="fa-plus-circle" disabled title="Funcionalidad de edición deshabilitada">
+                    <Button icon="fa-plus-circle" onClick={() => setIsAddCategoryModalOpen(true)} className="min-h-[44px] px-5 py-3 active:scale-95 touch-manipulation no-hover">
                         Agregar Nueva Categoría
                     </Button>
                 </div>
@@ -196,16 +272,17 @@ const InventoryPage: React.FC = () => {
                 ) : (
                     <div className="space-y-2">
                         {state.categories.map(c => (
-                            <div key={c.id} className="bg-slate-800/60 rounded-lg p-3 flex justify-between items-center">
+                            <div key={c.id} className="bg-slate-800/60 rounded-lg p-3 flex justify-between items-center border border-slate-700 hover:shadow-lg transition group">
                                 <div className="flex items-center gap-3">
-                                    <span className="text-2xl">{c.icon || DEFAULT_ICON}</span>
+                                    <span className="text-2xl bg-slate-900/60 rounded-lg px-3 py-1 border border-slate-700 group-hover:border-accent transition">{c.icon || DEFAULT_ICON}</span>
                                     <div>
-                                        <p className="font-semibold">{c.name}</p>
+                                        <p className="font-semibold text-lg text-white group-hover:text-accent transition">{c.name}</p>
                                         <small className="text-gray-400">{state.products.filter(p => p.categoryId === c.id).length} productos</small>
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    {/* Edición y eliminación de categorías deshabilitadas */}
+                                    <Button variant="icon" icon="fa-edit" title="Editar" onClick={() => handleOpenEditCategory(c)} className="hover:bg-accent/30" />
+                                    <Button variant="icon" icon="fa-trash" title="Eliminar" onClick={() => handleOpenDeleteCategory(c)} className="hover:bg-danger/30" />
                                 </div>
                             </div>
                         ))}
@@ -213,6 +290,56 @@ const InventoryPage: React.FC = () => {
                 )}
             </div>
         )}
+        <Modal isOpen={isAddCategoryModalOpen} onClose={() => setIsAddCategoryModalOpen(false)} title="Agregar Nueva Categoría">
+            <form onSubmit={e => { e.preventDefault(); handleAddCategory(); }} className="space-y-6">
+                <div>
+                    <label className="block text-accent font-semibold mb-2">Nombre de la Categoría</label>
+                    <Input value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Ej: Bebidas" required maxLength={30} />
+                </div>
+                <div>
+                    <label className="block text-accent font-semibold mb-2">Icono</label>
+                    <div className="flex flex-wrap gap-2">
+                        {AVAILABLE_ICONS.map(icon => (
+                            <button type="button" key={icon} className={`text-2xl p-2 rounded-lg border-2 ${newCategoryIcon === icon ? 'border-accent bg-accent/20' : 'border-slate-700 bg-slate-800/40'} focus:outline-none`} onClick={() => setNewCategoryIcon(icon)} aria-label={`Seleccionar icono ${icon}`}>{icon}</button>
+                        ))}
+                    </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                    <Button type="button" variant="danger" onClick={() => setIsAddCategoryModalOpen(false)}>Cancelar</Button>
+                    <Button type="submit" icon="fa-check">Guardar</Button>
+                </div>
+            </form>
+        </Modal>
+        <Modal isOpen={isEditCategoryModalOpen} onClose={() => { setIsEditCategoryModalOpen(false); setEditingCategory(null); }} title="Editar Categoría">
+            <form onSubmit={e => { e.preventDefault(); handleEditCategory(); }} className="space-y-6">
+                <div>
+                    <label className="block text-accent font-semibold mb-2">Nombre de la Categoría</label>
+                    <Input value={editingCategory?.name || ''} onChange={e => setEditingCategory(editingCategory ? { ...editingCategory, name: e.target.value } : null)} placeholder="Ej: Bebidas" required maxLength={30} />
+                </div>
+                <div>
+                    <label className="block text-accent font-semibold mb-2">Icono</label>
+                    <div className="flex flex-wrap gap-2">
+                        {AVAILABLE_ICONS.map(icon => (
+                            <button type="button" key={icon} className={`text-2xl p-2 rounded-lg border-2 ${editingCategory?.icon === icon ? 'border-accent bg-accent/20' : 'border-slate-700 bg-slate-800/40'} focus:outline-none`} onClick={() => setEditingCategory(editingCategory ? { ...editingCategory, icon } : null)} aria-label={`Seleccionar icono ${icon}`}>{icon}</button>
+                        ))}
+                    </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                    <Button type="button" variant="danger" onClick={() => { setIsEditCategoryModalOpen(false); setEditingCategory(null); }}>Cancelar</Button>
+                    <Button type="submit" icon="fa-check">Guardar Cambios</Button>
+                </div>
+            </form>
+        </Modal>
+        <Modal isOpen={isDeleteConfirmOpen} onClose={() => { setIsDeleteConfirmOpen(false); setDeletingCategory(null); }} title="Eliminar Categoría">
+            <div className="space-y-6">
+                <p className="text-lg text-danger font-semibold">¿Estás seguro de que deseas eliminar la categoría "{deletingCategory?.name}"?</p>
+                <p className="text-gray-400 text-sm">Esta acción no se puede deshacer. No puedes eliminar una categoría que tenga productos asociados.</p>
+                <div className="flex justify-end gap-2">
+                    <Button type="button" onClick={() => { setIsDeleteConfirmOpen(false); setDeletingCategory(null); }}>Cancelar</Button>
+                    <Button type="button" variant="danger" icon="fa-trash" onClick={handleDeleteCategory}>Eliminar</Button>
+                </div>
+            </div>
+        </Modal>
       </CardContent>
       <style>{`
         .touch-manipulation { touch-action: manipulation; }
