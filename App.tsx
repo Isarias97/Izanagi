@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { Page, AppState, Category, Product, SaleReport, SaleItem, Worker, AuditReport, TransactionLogEntry } from './types';
 import { getInitialState } from './state';
 import { DataContext } from './context';
@@ -75,12 +76,206 @@ const loadAndMigrateState = (): AppState => {
   }
 };
 
+const PAGE_TO_PATH = {
+  POS: '/',
+  Purchases: '/compras',
+  Inventory: '/inventario',
+  Reports: '/reportes',
+  Payroll: '/nomina',
+  Workers: '/trabajadores',
+  AI: '/ai',
+  Config: '/config',
+};
+const PATH_TO_PAGE = {
+  '/': 'POS',
+  '/compras': 'Purchases',
+  '/inventario': 'Inventory',
+  '/reportes': 'Reports',
+  '/nomina': 'Payroll',
+  '/trabajadores': 'Workers',
+  '/ai': 'AI',
+  '/config': 'Config',
+};
 
+function AppRoutes({
+  state,
+  setState,
+  currentUser,
+  setCurrentUser,
+  notification,
+  setNotification,
+  showNotification,
+  handleLogout,
+  showInstallBanner,
+  setShowInstallBanner,
+  deferredPrompt,
+  footerVisible,
+  setFooterVisible,
+  handleInstallClick,
+}) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [activePage, setActivePage] = useState(() => {
+    return PATH_TO_PAGE[location.pathname] || 'POS';
+  });
+
+  // Sincroniza la URL con el estado
+  useEffect(() => {
+    const path = PAGE_TO_PATH[activePage] || '/';
+    if (location.pathname !== path) navigate(path, { replace: true });
+  }, [activePage, navigate, location.pathname]);
+
+  // Atajos de teclado
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const activeElement = document.activeElement as HTMLElement;
+    const isInputFocused = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA';
+    const shortcutMap = {
+      'F1': 'POS',
+      'F2': 'Purchases',
+      'F3': 'Inventory',
+      'F4': 'Reports',
+      'F5': 'Payroll',
+      'F6': 'Workers',
+      'F7': 'AI',
+    };
+    if (shortcutMap[e.key] && !isInputFocused) {
+      e.preventDefault();
+      setActivePage(shortcutMap[e.key]);
+    }
+  }, []);
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  // Actualiza activePage al cambiar la URL manualmente
+  useEffect(() => {
+    const page = PATH_TO_PAGE[location.pathname] || 'POS';
+    setActivePage(page);
+  }, [location.pathname]);
+
+  const contextValue = useMemo(() => ({
+    state,
+    setState,
+    showNotification,
+    setActivePage: (page) => setActivePage(page),
+    currentUser,
+    logout: handleLogout,
+  }), [state, showNotification, setActivePage, currentUser, handleLogout]);
+
+  if (!currentUser) {
+    return (
+      <DataContext.Provider value={contextValue}>
+        <Routes>
+          <Route path="*" element={<LoginPage onLoginSuccess={(worker) => {
+            setCurrentUser(worker);
+            setActivePage('POS');
+            showNotification('¡Bienvenido!', `Has iniciado sesión como ${worker.name}.`);
+          }} />} />
+        </Routes>
+      </DataContext.Provider>
+    );
+  }
+
+  return (
+    <DataContext.Provider value={contextValue}>
+      <div className="flex flex-col min-h-screen bg-dark-bg w-full">
+        {/* Banner de instalación PWA */}
+        {showInstallBanner && (
+          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] bg-primary text-white rounded-xl shadow-2xl px-6 py-4 flex items-center gap-4 animate-fade-in" style={{maxWidth:'95vw'}}>
+            <span className="text-lg font-semibold"><i className="fas fa-download mr-2"/>Instala Izanagi en tu móvil</span>
+            <button className="ml-4 px-4 py-2 rounded-lg bg-accent text-primary font-bold shadow hover:bg-white/90 transition" onClick={handleInstallClick}>Instalar</button>
+            <button className="ml-2 text-white/80 hover:text-white text-xl" aria-label="Cerrar" onClick={()=>setShowInstallBanner(false)}>&times;</button>
+          </div>
+        )}
+        <header className="bg-primary shadow-lg sticky top-0 z-40 p-2 flex flex-row items-center justify-between gap-2 min-h-[56px] w-full max-w-screen-xl mx-auto">
+          <MobileNavDrawer
+            activePage={activePage}
+            setActivePage={(page) => setActivePage(page)}
+            currentUser={currentUser ? { name: currentUser.name, role: currentUser.role } : null}
+            onLogout={handleLogout}
+          />
+          {/* Logo y título */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Icon name="fa-cash-register" className="text-accent text-xl flex-shrink-0" />
+            <div className="flex flex-col min-w-0">
+              <h1 className="text-sm font-semibold text-white truncate">
+                Izanagi <span className="text-xs bg-accent text-primary font-bold py-0.5 px-2 rounded-full ml-1">CUP</span>
+              </h1>
+              <span className="text-[10px] mt-0.5 text-accent/80 italic font-medium drop-shadow-sm hidden sm:block" style={{letterSpacing: '0.5px'}}>by Isarias</span>
+            </div>
+          </div>
+          {/* Info usuario y saldos en móvil */}
+          <div className="flex flex-col items-end gap-0.5 text-right flex-shrink-0 min-w-[110px]">
+            <div className="flex items-center gap-1">
+              <Icon name="fa-wallet" className="text-accent text-base" />
+              <span className="text-[11px] text-white font-bold">{state.investmentBalance.toFixed(2)} CUP</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Icon name="fa-users" className="text-accent text-base" />
+              <span className="text-[11px] text-white font-bold">{state.workerPayoutBalance.toFixed(2)} CUP</span>
+            </div>
+            <div className="flex items-center gap-1 mt-0.5">
+              <Icon name="fa-user-circle" className="text-accent text-sm" />
+              <span className="text-[11px] text-white font-semibold truncate max-w-[60px]">{currentUser?.name}</span>
+              <span className="text-[9px] text-gray-300 font-medium">{currentUser?.role}</span>
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-4 md:py-6 lg:py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <Routes>
+              <Route path="/" element={<PosPage />} />
+              <Route path="/compras" element={<PurchasesPage />} />
+              <Route path="/inventario" element={<InventoryPage />} />
+              <Route path="/reportes" element={<ReportsPage />} />
+              <Route path="/nomina" element={<PayrollPage />} />
+              <Route path="/trabajadores" element={<WorkersPage />} />
+              <Route path="/ai" element={<AIAssistantPage />} />
+              <Route path="/config" element={<ConfigPage />} />
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </div>
+        </main>
+        {notification?.visible && (
+            <div className={`fixed top-24 right-5 w-80 rounded-lg shadow-2xl p-4 text-white z-50 transition-transform duration-300 transform ${notification.visible ? 'translate-x-0' : 'translate-x-full'} bg-dark-card backdrop-blur-lg border-l-4 ${notification.isError ? 'border-danger' : 'border-success'}`}>
+                <p className="font-bold">{notification.title}</p>
+                <p className="text-sm text-gray-300">{notification.message}</p>
+            </div>
+        )}
+        {/* Footer mejorado */}
+        <footer
+          className={`bg-primary text-center p-4 text-sm text-gray-400 transition-all duration-500 ${footerVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
+            fixed bottom-0 left-0 w-full z-50 shadow-3d-card rounded-t-xl sm:rounded-none`}
+          style={{fontWeight:'bold',letterSpacing:'1px',fontSize:'1.1rem',boxShadow:'0 2px 8px 0 rgba(0,42,143,0.18), 0 1.5px 4px 0 rgba(207,20,43,0.12)',maxWidth:'100vw'}}
+        >
+          <span className="hidden sm:inline">Sistema de Ventas Izanagi v8.2 (Estable) &copy; {new Date().getFullYear()} - Todos los datos se guardan en su navegador.</span>
+          <span className="sm:hidden flex items-center justify-center gap-2">
+            <span>Creado por Isarias</span>
+            <button className="ml-2 px-2 py-1 rounded bg-accent text-primary font-bold text-xs shadow hover:bg-white/90 transition" onClick={()=>setFooterVisible(false)} aria-label="Ocultar pie">Ocultar</button>
+          </span>
+        </footer>
+        <style>{`
+          @media (max-width: 640px) {
+            footer { font-size: 0.98rem !important; padding: 0.7rem 0.5rem !important; border-radius: 1.2rem 1.2rem 0 0 !important; }
+          }
+          .animate-fade-in { animation: fade-in 0.3s ease; }
+          @keyframes fade-in { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: none; } }
+        `}</style>
+      </div>
+    </DataContext.Provider>
+  );
+}
+
+// App principal con BrowserRouter
 const App: React.FC = () => {
   const [activePage, setActivePage] = useState<Page>(Page.POS);
   const [state, setState] = useState<AppState>(loadAndMigrateState);
   const [currentUser, setCurrentUser] = useState<Worker | null>(null);
   const [notification, setNotification] = useState<{ title: string; message: string; isError: boolean; visible: boolean } | null>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const deferredPrompt = useRef<any>(null);
+  const [footerVisible, setFooterVisible] = useState(true);
 
   useEffect(() => {
     try {
@@ -157,6 +352,41 @@ const App: React.FC = () => {
     }
   };
 
+  // Banner de instalación PWA
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      deferredPrompt.current = e;
+      setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt.current) {
+      deferredPrompt.current.prompt();
+      const { outcome } = await deferredPrompt.current.userChoice;
+      if (outcome === 'accepted') {
+        setShowInstallBanner(false);
+        deferredPrompt.current = null;
+      }
+    }
+  };
+
+  // Footer flotante y ocultable en móvil
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerWidth <= 640) {
+        setFooterVisible(false);
+        clearTimeout((window as any)._footerTimeout);
+        (window as any)._footerTimeout = setTimeout(() => setFooterVisible(true), 1200);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   if (!currentUser) {
     return (
       <DataContext.Provider value={contextValue}>
@@ -166,60 +396,24 @@ const App: React.FC = () => {
   }
 
   return (
-    <DataContext.Provider value={contextValue}>
-      <div className="flex flex-col min-h-screen bg-dark-bg">
-        <header className="bg-primary shadow-lg sticky top-0 z-40 p-2 flex flex-row items-center justify-between gap-2 min-h-[56px]">
-          <MobileNavDrawer
-            activePage={activePage}
-            setActivePage={(page: string) => {
-              if (page !== activePage) setActivePage(page as Page);
-            }}
-            currentUser={currentUser ? { name: currentUser.name, role: currentUser.role } : null}
-            onLogout={handleLogout}
-          />
-          {/* Logo y título */}
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Icon name="fa-cash-register" className="text-accent text-xl flex-shrink-0" />
-            <div className="flex flex-col min-w-0">
-              <h1 className="text-sm font-semibold text-white truncate">
-                Izanagi <span className="text-xs bg-accent text-primary font-bold py-0.5 px-2 rounded-full ml-1">CUP</span>
-              </h1>
-              <span className="text-[10px] mt-0.5 text-accent/80 italic font-medium drop-shadow-sm hidden sm:block" style={{letterSpacing: '0.5px'}}>by Isarias</span>
-            </div>
-          </div>
-          {/* Info usuario y saldos en móvil */}
-          <div className="flex flex-col items-end gap-0.5 text-right flex-shrink-0 min-w-[110px]">
-            <div className="flex items-center gap-1">
-              <Icon name="fa-wallet" className="text-accent text-base" />
-              <span className="text-[11px] text-white font-bold">{state.investmentBalance.toFixed(2)} CUP</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Icon name="fa-users" className="text-accent text-base" />
-              <span className="text-[11px] text-white font-bold">{state.workerPayoutBalance.toFixed(2)} CUP</span>
-            </div>
-            <div className="flex items-center gap-1 mt-0.5">
-              <Icon name="fa-user-circle" className="text-accent text-sm" />
-              <span className="text-[11px] text-white font-semibold truncate max-w-[60px]">{currentUser?.name}</span>
-              <span className="text-[9px] text-gray-300 font-medium">{currentUser?.role}</span>
-            </div>
-          </div>
-        </header>
-        <main className="flex-1 p-2 sm:p-4 lg:p-8 max-w-screen-2xl w-full mx-auto space-y-4">
-          {renderPage()}
-        </main>
-        
-        {notification?.visible && (
-            <div className={`fixed top-24 right-5 w-80 rounded-lg shadow-2xl p-4 text-white z-50 transition-transform duration-300 transform ${notification.visible ? 'translate-x-0' : 'translate-x-full'} bg-dark-card backdrop-blur-lg border-l-4 ${notification.isError ? 'border-danger' : 'border-success'}`}>
-                <p className="font-bold">{notification.title}</p>
-                <p className="text-sm text-gray-300">{notification.message}</p>
-            </div>
-        )}
-
-        <footer className="bg-primary text-center p-4 text-sm text-gray-400">
-          <p>Sistema de Ventas Izanagi v8.2 (Estable) &copy; {new Date().getFullYear()} - Todos los datos se guardan en su navegador.</p>
-        </footer>
-      </div>
-    </DataContext.Provider>
+    <BrowserRouter>
+      <AppRoutes
+        state={state}
+        setState={setState}
+        currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
+        notification={notification}
+        setNotification={setNotification}
+        showNotification={showNotification}
+        handleLogout={handleLogout}
+        showInstallBanner={showInstallBanner}
+        setShowInstallBanner={setShowInstallBanner}
+        deferredPrompt={deferredPrompt}
+        footerVisible={footerVisible}
+        setFooterVisible={setFooterVisible}
+        handleInstallClick={handleInstallClick}
+      />
+    </BrowserRouter>
   );
 };
 

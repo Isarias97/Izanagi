@@ -1,15 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button, Icon } from './ui';
+import { useNavigate } from 'react-router-dom';
 
 const NAV_LINKS = [
-  { label: 'POS', icon: 'fa-cash-register', page: 'POS' },
-  { label: 'Compras', icon: 'fa-shopping-bag', page: 'Purchases' },
-  { label: 'Inventario', icon: 'fa-boxes', page: 'Inventory' },
-  { label: 'Reportes', icon: 'fa-chart-line', page: 'Reports' },
-  { label: 'Nómina', icon: 'fa-money-check-alt', page: 'Payroll' },
-  { label: 'Trabajadores', icon: 'fa-users', page: 'Workers' },
-  { label: 'AI', icon: 'fa-robot', page: 'AI' },
-  { label: 'Configuración', icon: 'fa-cog', page: 'Config' },
+  { label: 'POS', icon: 'fa-cash-register', page: 'POS', path: '/' },
+  { label: 'Compras', icon: 'fa-shopping-bag', page: 'Purchases', path: '/compras' },
+  { label: 'Inventario', icon: 'fa-boxes', page: 'Inventory', path: '/inventario' },
+  { label: 'Reportes', icon: 'fa-chart-line', page: 'Reports', path: '/reportes' },
+  { label: 'Nómina', icon: 'fa-money-check-alt', page: 'Payroll', path: '/nomina' },
+  { label: 'Trabajadores', icon: 'fa-users', page: 'Workers', path: '/trabajadores' },
+  { label: 'AI', icon: 'fa-robot', page: 'AI', path: '/ai' },
+  { label: 'Configuración', icon: 'fa-cog', page: 'Config', path: '/config' },
 ];
 
 interface MobileNavDrawerProps {
@@ -24,6 +25,7 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({ activePage, setActive
   const drawerRef = useRef<HTMLDivElement>(null);
   const firstLinkRef = useRef<HTMLButtonElement>(null);
   const prevBodyOverflow = useRef<string | null>(null);
+  const navigate = useNavigate();
 
   // Cerrar con Escape o tap fuera, focus management, evitar scroll fondo
   useEffect(() => {
@@ -68,10 +70,13 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({ activePage, setActive
   };
 
   // Navegación segura: cambiar página y cerrar drawer
-  const handleNavClick = (page: string) => {
+  const handleNavClick = (page: string, path: string) => {
     setOpen(false);
     setTimeout(() => {
-      if (page !== activePage) setActivePage(page);
+      if (page !== activePage) {
+        setActivePage(page);
+        navigate(path);
+      }
     }, 200); // Espera a que drawer cierre antes de cambiar página
   };
 
@@ -117,7 +122,7 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({ activePage, setActive
                 <button
                   ref={i === 0 ? firstLinkRef : undefined}
                   className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-accent active:scale-97 touch-manipulation ${activePage === link.page ? 'bg-white text-primary shadow-lg' : 'bg-black/10 text-white'} no-hover`}
-                  onClick={() => handleNavClick(link.page)}
+                  onClick={() => handleNavClick(link.page, link.path)}
                   aria-current={activePage === link.page ? 'page' : undefined}
                   onTouchStart={handleButtonTouch}
                 >
@@ -127,11 +132,9 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({ activePage, setActive
               </li>
             ))}
           </ul>
-          <div className="mt-auto pt-8">
-            <Button variant="danger" icon="fa-sign-out-alt" className="w-full py-4 text-lg rounded-2xl" onClick={() => { setOpen(false); onLogout(); }} onTouchStart={handleButtonTouch}>
-              Cerrar sesión
-            </Button>
-          </div>
+          <Button variant="danger" icon="fa-sign-out-alt" className="w-full py-4 text-lg rounded-2xl" onClick={() => { setOpen(false); onLogout(); }} onTouchStart={handleButtonTouch}>
+            Cerrar sesión
+          </Button>
         </div>
       </nav>
       {/* Estilos para feedback táctil y eliminar hover en móvil */}
