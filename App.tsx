@@ -6,6 +6,7 @@ import { Page, AppState, Category, Product, SaleReport, SaleItem, Worker, AuditR
 import { getInitialState } from './state';
 import { DataContext } from './context';
 import { Icon } from './components/ui';
+import MobileNavDrawer from './components/MobileNavDrawer';
 
 // Lazy load de páginas principales para performance
 const PosPage = lazy(() => import('./pages/PosPage'));
@@ -16,7 +17,7 @@ const PurchasesPage = lazy(() => import('./pages/PurchasesPage'));
 const WorkersPage = lazy(() => import('./pages/WorkersPage'));
 const AIAssistantPage = lazy(() => import('./pages/AIAssistantPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
-const PayrollPage = lazy(() => import('./pages/PayrollPage'));
+const PayrollPage = lazy(() => import('./pages/PayrollPage').then(module => ({ default: module.PayrollPage })));
 
 const loadAndMigrateState = (): AppState => {
   try {
@@ -183,13 +184,13 @@ function AppRoutes({
   if (!currentUser) {
     return (
       <DataContext.Provider value={contextValue}>
-        <Routes>
-          <Route path="*" element={<LoginPage onLoginSuccess={(worker: Worker) => {
+        <Suspense fallback={<div className="p-8 text-center">Cargando...</div>}>
+          <LoginPage onLoginSuccess={(worker: Worker) => {
             setCurrentUser(worker);
             setActivePage('POS');
             showNotification('¡Bienvenido!', `Has iniciado sesión como ${worker.name}.`);
-          }} />} />
-        </Routes>
+          }} />
+        </Suspense>
       </DataContext.Provider>
     );
   }
@@ -205,6 +206,8 @@ function AppRoutes({
             <button className="ml-2 text-white/80 hover:text-white text-xl" aria-label="Cerrar" onClick={()=>setShowInstallBanner(false)}>&times;</button>
           </div>
         )}
+        
+        {/* Header mejorado con navegación móvil */}
         <header className="bg-primary shadow-lg sticky top-0 z-40 p-2 flex flex-row items-center justify-between gap-2 min-h-[56px] w-full max-w-screen-xl mx-auto">
           {/* Logo y título */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -216,6 +219,7 @@ function AppRoutes({
               <span className="text-[10px] mt-0.5 text-accent/80 italic font-medium drop-shadow-sm hidden sm:block" style={{letterSpacing: '0.5px'}}>by Isarias</span>
             </div>
           </div>
+          
           {/* Info usuario y saldos en móvil */}
           <div className="flex flex-col items-end gap-0.5 text-right flex-shrink-0 min-w-[110px]">
             <div className="flex items-center gap-1">
@@ -233,8 +237,18 @@ function AppRoutes({
             </div>
           </div>
         </header>
+
+        {/* Navegación móvil */}
+        <MobileNavDrawer
+          activePage={activePage}
+          setActivePage={setActivePage}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+        />
+
+        {/* Contenido principal */}
         <main className="flex-1 w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-4 md:py-6 lg:py-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="w-full">
             <Routes>
               <Route path="/" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><PosPage /></Suspense>} />
               <Route path="/compras" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><PurchasesPage /></Suspense>} />
@@ -248,12 +262,15 @@ function AppRoutes({
             </Routes>
           </div>
         </main>
+
+        {/* Notificaciones */}
         {notification?.visible && (
             <div className={`fixed top-24 right-5 w-80 rounded-lg shadow-2xl p-4 text-white z-50 transition-transform duration-300 transform ${notification.visible ? 'translate-x-0' : 'translate-x-full'} bg-dark-card backdrop-blur-lg border-l-4 ${notification.isError ? 'border-danger' : 'border-success'}`}>
                 <p className="font-bold">{notification.title}</p>
                 <p className="text-sm text-gray-300">{notification.message}</p>
             </div>
         )}
+
         {/* Footer mejorado */}
         <footer
           className={`bg-primary text-center p-4 text-sm text-gray-400 transition-all duration-500 ${footerVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
@@ -266,9 +283,12 @@ function AppRoutes({
             <button className="ml-2 px-2 py-1 rounded bg-accent text-primary font-bold text-xs shadow hover:bg-white/90 transition" onClick={()=>setFooterVisible(false)} aria-label="Ocultar pie">Ocultar</button>
           </span>
         </footer>
+
+        {/* Estilos mejorados */}
         <style>{`
           @media (max-width: 640px) {
             footer { font-size: 0.98rem !important; padding: 0.7rem 0.5rem !important; border-radius: 1.2rem 1.2rem 0 0 !important; }
+            main { padding-top: 1rem !important; }
           }
           .animate-fade-in { animation: fade-in 0.3s ease; }
           @keyframes fade-in { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: none; } }
