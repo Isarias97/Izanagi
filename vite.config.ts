@@ -63,6 +63,10 @@ export default defineConfig(({ mode }) => {
             enabled: true
           }
         })
-      ]
+      ],
+      test: {
+        globals: true,
+        environment: 'jsdom',
+      }
     };
 });

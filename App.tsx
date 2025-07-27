@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Page, AppState, Category, Product, SaleReport, SaleItem, Worker, AuditReport, TransactionLogEntry } from './types';
 import { getInitialState } from './state';
 import { DataContext } from './context';
@@ -14,7 +14,6 @@ import AIAssistantPage from './pages/AIAssistantPage';
 import LoginPage from './pages/LoginPage';
 import { PayrollPage } from './pages/PayrollPage';
 import { Icon } from './components/ui';
-import MobileNavDrawer from './components/MobileNavDrawer';
 
 const loadAndMigrateState = (): AppState => {
   try {
@@ -128,17 +127,17 @@ function AppRoutes({
   setFooterVisible,
   handleInstallClick,
 }: AppRoutesProps) {
-  const navigate = useNavigate();
-  const location = useLocation();
   const [activePage, setActivePage] = useState<string>(() => {
-    return PATH_TO_PAGE[location.pathname] || 'POS';
+    return PATH_TO_PAGE[window.location.pathname] || 'POS';
   });
 
   // Sincroniza la URL con el estado
   useEffect(() => {
     const path = PAGE_TO_PATH[activePage] || '/';
-    if (location.pathname !== path) navigate(path, { replace: true });
-  }, [activePage, navigate, location.pathname]);
+    if (window.location.pathname !== path) {
+      window.history.replaceState({}, '', path);
+    }
+  }, [activePage]);
 
   // Atajos de teclado
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -165,9 +164,9 @@ function AppRoutes({
 
   // Actualiza activePage al cambiar la URL manualmente
   useEffect(() => {
-    const page = PATH_TO_PAGE[location.pathname] || 'POS';
+    const page = PATH_TO_PAGE[window.location.pathname] || 'POS';
     setActivePage(page);
-  }, [location.pathname]);
+  }, [window.location.pathname]);
   
   const contextValue = useMemo(() => ({
     state,
@@ -204,12 +203,6 @@ function AppRoutes({
           </div>
         )}
         <header className="bg-primary shadow-lg sticky top-0 z-40 p-2 flex flex-row items-center justify-between gap-2 min-h-[56px] w-full max-w-screen-xl mx-auto">
-          <MobileNavDrawer
-            activePage={activePage}
-            setActivePage={(page: string) => setActivePage(page)}
-            currentUser={currentUser ? { name: currentUser.name, role: currentUser.role } : null}
-            onLogout={handleLogout}
-          />
           {/* Logo y título */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <Icon name="fa-cash-register" className="text-accent text-xl flex-shrink-0" />

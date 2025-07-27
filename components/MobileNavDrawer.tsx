@@ -160,4 +160,4 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({ activePage, setActive
   );
 };
 
-export default MobileNavDrawer; 
+export default React.memo(MobileNavDrawer); 

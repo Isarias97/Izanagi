@@ -1,38 +1,96 @@
-import React, { useState, useContext, useMemo } from 'react';
+import React, { useState, useContext, useMemo, useCallback } from 'react';
 import { DataContext } from '../context';
 import { Card, CardHeader, CardContent, InputGroup, Input, Button, Select, Icon } from '../components/ui';
 import { Product } from '../types';
 import { DEFAULT_ICON } from '../constants';
 import Modal from '../components/Modal';
-import { AVAILABLE_ICONS } from '../constants';
+
+// Tipos explícitos para edición/eliminación de categorías
+interface CategoryEdit { id: number; name: string; icon: string; }
+interface CategoryDelete { id: number; name: string; }
 
 type InventoryTab = 'products' | 'categories';
+
+// Constantes fuera del componente para evitar recreación
+const productTableHeaders: {key: keyof Product | 'categoryName', label: string}[] = [
+  {key: 'sku', label: 'SKU'},
+  {key: 'name', label: 'Producto'},
+  {key: 'categoryName', label: 'Categoría'},
+  {key: 'costPrice', label: 'Costo (CUP)'},
+  {key: 'price', label: 'Venta (CUP)'},
+  {key: 'stock', label: 'Stock'},
+];
+
+const getStockStatus = (stock: number) => {
+  if (stock === 0) return { text: 'Agotado', color: 'text-danger' };
+  if (stock <= 10) return { text: 'Bajo', color: 'text-warning' };
+  if (stock <= 25) return { text: 'Medio', color: 'text-yellow-400' };
+  return { text: 'Alto', color: 'text-green-400' };
+};
+
+// Componente para una fila de producto
+const ProductRow: React.FC<{ product: Product; categoryName: string; categoryIcon: string; onDelete: (p: Product) => void; }> = React.memo(({ product, categoryName, categoryIcon, onDelete }) => {
+  const stockStatus = getStockStatus(product.stock);
+  return (
+    <tr className="border-b border-slate-700 bg-slate-900/30 active:scale-95 touch-manipulation no-hover space-y-2">
+      <td className="px-6 py-4">{product.sku}</td>
+      <td className="px-6 py-4 font-semibold flex items-center gap-3">
+        <span className="text-2xl md:text-3xl">{categoryIcon || DEFAULT_ICON}</span> {product.name}
+      </td>
+      <td className="px-6 py-4">{categoryName || 'N/A'}</td>
+      <td className="px-6 py-4">${product.costPrice.toFixed(2)}</td>
+      <td className="px-6 py-4 font-bold text-accent">${product.price.toFixed(2)}</td>
+      <td className="px-6 py-4">{product.stock}</td>
+      <td className={`px-6 py-4 font-bold ${stockStatus.color}`}>{stockStatus.text}</td>
+      <td className="px-6 py-4">
+        <div className="flex gap-2 justify-end">
+          <Button variant="icon" className="bg-danger/30 hover:bg-danger/60 w-10 h-10 min-w-[44px] min-h-[44px] active:scale-95 touch-manipulation no-hover" onClick={() => onDelete(product)} aria-label="Eliminar producto"><Icon name="fa-trash"/></Button>
+        </div>
+      </td>
+    </tr>
+  );
+});
+
+// Componente para tarjeta de categoría
+const CategoryCard: React.FC<{ category: { id: number; name: string; icon: string }; productCount: number; onEdit: (cat: CategoryEdit) => void; onDelete: (cat: CategoryDelete) => void; }> = React.memo(({ category, productCount, onEdit, onDelete }) => (
+  <div className="bg-slate-800/60 rounded-lg p-3 flex justify-between items-center border border-slate-700 hover:shadow-lg transition group">
+    <div className="flex items-center gap-3">
+      <span className="text-2xl bg-slate-900/60 rounded-lg px-3 py-1 border border-slate-700 group-hover:border-accent transition">{category.icon || DEFAULT_ICON}</span>
+      <div>
+        <p className="font-semibold text-lg text-white group-hover:text-accent transition">{category.name}</p>
+        <small className="text-gray-400">{productCount} productos</small>
+      </div>
+    </div>
+    <div className="flex gap-2">
+      <Button variant="icon" icon="fa-edit" title="Editar" aria-label="Editar categoría" onClick={() => onEdit(category)} className="hover:bg-accent/30" />
+      <Button variant="icon" icon="fa-trash" title="Eliminar" aria-label="Eliminar categoría" onClick={() => onDelete(category)} className="hover:bg-danger/30" />
+    </div>
+  </div>
+));
 
 const InventoryPage: React.FC = () => {
   const { state, setState, showNotification } = useContext(DataContext);
   const [activeTab, setActiveTab] = useState<InventoryTab>('products');
-  
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [sort, setSort] = useState<{ key: keyof Product | 'categoryName', order: 'asc' | 'desc' }>({ key: 'name', order: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
-  
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [newCategoryIcon, setNewCategoryIcon] = useState(AVAILABLE_ICONS[0]);
-
+  const [newCategoryIcon, setNewCategoryIcon] = useState(DEFAULT_ICON);
   const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null as null | { id: number; name: string; icon: string });
+  const [editingCategory, setEditingCategory] = useState<CategoryEdit | null>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [deletingCategory, setDeletingCategory] = useState(null as null | { id: number; name: string });
+  const [deletingCategory, setDeletingCategory] = useState<CategoryDelete | null>(null);
 
-  const handleDeleteAttempt = (product: Product) => {
+  // Memoizar handlers
+  const handleDeleteAttempt = useCallback((product: Product) => {
     if (product.stock > 0) {
       showNotification('Aviso', 'No se recomienda eliminar productos con stock. Considere poner el stock en 0.', true);
     }
-  };
+  }, [showNotification]);
 
-  const handleAddCategory = () => {
+  const handleAddCategory = useCallback(() => {
     if (!newCategoryName.trim()) {
       showNotification('Error', 'El nombre de la categoría no puede estar vacío.', true);
       return;
@@ -49,15 +107,15 @@ const InventoryPage: React.FC = () => {
     showNotification('Éxito', `Categoría "${newCategoryName.trim()}" agregada.`);
     setIsAddCategoryModalOpen(false);
     setNewCategoryName('');
-    setNewCategoryIcon(AVAILABLE_ICONS[0]);
-  };
+    setNewCategoryIcon(DEFAULT_ICON);
+  }, [newCategoryName, newCategoryIcon, setState, showNotification, state.categories]);
 
-  const handleOpenEditCategory = (cat: { id: number; name: string; icon: string }) => {
+  const handleOpenEditCategory = useCallback((cat: CategoryEdit) => {
     setEditingCategory(cat);
     setIsEditCategoryModalOpen(true);
-  };
+  }, []);
 
-  const handleEditCategory = () => {
+  const handleEditCategory = useCallback(() => {
     if (!editingCategory || !editingCategory.name.trim()) {
       showNotification('Error', 'El nombre de la categoría no puede estar vacío.', true);
       return;
@@ -73,16 +131,15 @@ const InventoryPage: React.FC = () => {
     showNotification('Éxito', `Categoría "${editingCategory.name.trim()}" actualizada.`);
     setIsEditCategoryModalOpen(false);
     setEditingCategory(null);
-  };
+  }, [editingCategory, setState, showNotification, state.categories]);
 
-  const handleOpenDeleteCategory = (cat: { id: number; name: string }) => {
+  const handleOpenDeleteCategory = useCallback((cat: CategoryDelete) => {
     setDeletingCategory(cat);
     setIsDeleteConfirmOpen(true);
-  };
+  }, []);
 
-  const handleDeleteCategory = () => {
+  const handleDeleteCategory = useCallback(() => {
     if (!deletingCategory) return;
-    // No permitir eliminar si hay productos asociados
     if (state.products.some(p => p.categoryId === deletingCategory.id)) {
       showNotification('Error', 'No se puede eliminar una categoría con productos asociados.', true);
       setIsDeleteConfirmOpen(false);
@@ -96,7 +153,7 @@ const InventoryPage: React.FC = () => {
     showNotification('Éxito', `Categoría "${deletingCategory.name}" eliminada.`);
     setIsDeleteConfirmOpen(false);
     setDeletingCategory(null);
-  };
+  }, [deletingCategory, setState, showNotification, state.products]);
 
   const filteredProducts = useMemo(() => {
     let products = [...state.products];
@@ -108,21 +165,19 @@ const InventoryPage: React.FC = () => {
       products = products.filter(p => p.categoryId === Number(categoryFilter));
     }
     products.sort((a, b) => {
-        const key = sort.key;
-        let valA: string | number, valB: string | number;
-
-        if (key === 'categoryName') {
-            valA = state.categories.find(c => c.id === a.categoryId)?.name || '';
-            valB = state.categories.find(c => c.id === b.categoryId)?.name || '';
-        } else {
-            valA = a[key as keyof Product];
-            valB = b[key as keyof Product];
-        }
-
-        if (typeof valA === 'string' && typeof valB === 'string') {
-            return sort.order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        }
-        return sort.order === 'asc' ? (valA as number) - (valB as number) : (valB as number) - (valA as number);
+      const key = sort.key;
+      let valA: string | number, valB: string | number;
+      if (key === 'categoryName') {
+        valA = state.categories.find(c => c.id === a.categoryId)?.name || '';
+        valB = state.categories.find(c => c.id === b.categoryId)?.name || '';
+      } else {
+        valA = a[key as keyof Product];
+        valB = b[key as keyof Product];
+      }
+      if (typeof valA === 'string' && typeof valB === 'string') {
+        return sort.order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      }
+      return sort.order === 'asc' ? (valA as number) - (valB as number) : (valB as number) - (valA as number);
     });
     return products;
   }, [state.products, state.categories, searchTerm, categoryFilter, sort]);
@@ -131,29 +186,13 @@ const InventoryPage: React.FC = () => {
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const paginatedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const handleSort = (key: keyof Product | 'categoryName') => {
-      setSort(prev => ({
-          key,
-          order: prev.key === key && prev.order === 'asc' ? 'desc' : 'asc'
-      }));
-  };
+  const handleSort = useCallback((key: keyof Product | 'categoryName') => {
+    setSort(prev => ({
+      key,
+      order: prev.key === key && prev.order === 'asc' ? 'desc' : 'asc'
+    }));
+  }, []);
   
-  const getStockStatus = (stock: number) => {
-      if (stock === 0) return { text: 'Agotado', color: 'text-danger' };
-      if (stock <= 10) return { text: 'Bajo', color: 'text-warning' };
-      if (stock <= 25) return { text: 'Medio', color: 'text-yellow-400' };
-      return { text: 'Alto', color: 'text-green-400' };
-  };
-
-  const productTableHeaders: {key: keyof Product | 'categoryName', label: string}[] = [
-      {key: 'sku', label: 'SKU'},
-      {key: 'name', label: 'Producto'},
-      {key: 'categoryName', label: 'Categoría'},
-      {key: 'costPrice', label: 'Costo (CUP)'},
-      {key: 'price', label: 'Venta (CUP)'},
-      {key: 'stock', label: 'Stock'},
-  ];
-
   return (
     <Card>
       <CardHeader icon="fa-boxes">Gestión de Inventario</CardHeader>
@@ -225,22 +264,14 @@ const InventoryPage: React.FC = () => {
                             </tr>
                         ) : paginatedProducts.map(p => {
                             const category = state.categories.find(c => c.id === p.categoryId);
-                            const stockStatus = getStockStatus(p.stock);
                             return (
-                                <tr key={p.id} className="border-b border-slate-700 bg-slate-900/30 active:scale-95 touch-manipulation no-hover space-y-2">
-                                    <td className="px-6 py-4">{p.sku}</td>
-                                    <td className="px-6 py-4 font-semibold flex items-center gap-3"><span className="text-2xl md:text-3xl">{category?.icon || DEFAULT_ICON}</span> {p.name}</td>
-                                    <td className="px-6 py-4">{category?.name || 'N/A'}</td>
-                                    <td className="px-6 py-4">${p.costPrice.toFixed(2)}</td>
-                                    <td className="px-6 py-4 font-bold text-accent">${p.price.toFixed(2)}</td>
-                                    <td className="px-6 py-4">{p.stock}</td>
-                                    <td className={`px-6 py-4 font-bold ${stockStatus.color}`}>{stockStatus.text}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex gap-2 justify-end">
-                                            <Button variant="icon" className="bg-danger/30 hover:bg-danger/60 w-10 h-10 min-w-[44px] min-h-[44px] active:scale-95 touch-manipulation no-hover" onClick={() => handleDeleteAttempt(p)}><Icon name="fa-trash"/></Button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <ProductRow
+                                    key={p.id}
+                                    product={p}
+                                    categoryName={category?.name || 'N/A'}
+                                    categoryIcon={category?.icon || DEFAULT_ICON}
+                                    onDelete={handleDeleteAttempt}
+                                />
                             );
                         })}
                     </tbody>
@@ -272,19 +303,13 @@ const InventoryPage: React.FC = () => {
                 ) : (
                     <div className="space-y-2">
                         {state.categories.map(c => (
-                            <div key={c.id} className="bg-slate-800/60 rounded-lg p-3 flex justify-between items-center border border-slate-700 hover:shadow-lg transition group">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-2xl bg-slate-900/60 rounded-lg px-3 py-1 border border-slate-700 group-hover:border-accent transition">{c.icon || DEFAULT_ICON}</span>
-                                    <div>
-                                        <p className="font-semibold text-lg text-white group-hover:text-accent transition">{c.name}</p>
-                                        <small className="text-gray-400">{state.products.filter(p => p.categoryId === c.id).length} productos</small>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button variant="icon" icon="fa-edit" title="Editar" onClick={() => handleOpenEditCategory(c)} className="hover:bg-accent/30" />
-                                    <Button variant="icon" icon="fa-trash" title="Eliminar" onClick={() => handleOpenDeleteCategory(c)} className="hover:bg-danger/30" />
-                                </div>
-                            </div>
+                            <CategoryCard
+                                key={c.id}
+                                category={c}
+                                productCount={state.products.filter(p => p.categoryId === c.id).length}
+                                onEdit={handleOpenEditCategory}
+                                onDelete={handleOpenDeleteCategory}
+                            />
                         ))}
                     </div>
                 )}
@@ -299,9 +324,7 @@ const InventoryPage: React.FC = () => {
                 <div>
                     <label className="block text-accent font-semibold mb-2">Icono</label>
                     <div className="flex flex-wrap gap-2">
-                        {AVAILABLE_ICONS.map(icon => (
-                            <button type="button" key={icon} className={`text-2xl p-2 rounded-lg border-2 ${newCategoryIcon === icon ? 'border-accent bg-accent/20' : 'border-slate-700 bg-slate-800/40'} focus:outline-none`} onClick={() => setNewCategoryIcon(icon)} aria-label={`Seleccionar icono ${icon}`}>{icon}</button>
-                        ))}
+                        <button type="button" key={DEFAULT_ICON} className={`text-2xl p-2 rounded-lg border-2 ${newCategoryIcon === DEFAULT_ICON ? 'border-accent bg-accent/20' : 'border-slate-700 bg-slate-800/40'} focus:outline-none`} onClick={() => setNewCategoryIcon(DEFAULT_ICON)} aria-label={`Seleccionar icono ${DEFAULT_ICON}`}>{DEFAULT_ICON}</button>
                     </div>
                 </div>
                 <div className="flex justify-end gap-2">
@@ -319,9 +342,7 @@ const InventoryPage: React.FC = () => {
                 <div>
                     <label className="block text-accent font-semibold mb-2">Icono</label>
                     <div className="flex flex-wrap gap-2">
-                        {AVAILABLE_ICONS.map(icon => (
-                            <button type="button" key={icon} className={`text-2xl p-2 rounded-lg border-2 ${editingCategory?.icon === icon ? 'border-accent bg-accent/20' : 'border-slate-700 bg-slate-800/40'} focus:outline-none`} onClick={() => setEditingCategory(editingCategory ? { ...editingCategory, icon } : null)} aria-label={`Seleccionar icono ${icon}`}>{icon}</button>
-                        ))}
+                        <button type="button" key={DEFAULT_ICON} className={`text-2xl p-2 rounded-lg border-2 ${editingCategory?.icon === DEFAULT_ICON ? 'border-accent bg-accent/20' : 'border-slate-700 bg-slate-800/40'} focus:outline-none`} onClick={() => setEditingCategory(editingCategory ? { ...editingCategory, icon: DEFAULT_ICON } : null)} aria-label={`Seleccionar icono ${DEFAULT_ICON}`}>{DEFAULT_ICON}</button>
                     </div>
                 </div>
                 <div className="flex justify-end gap-2">

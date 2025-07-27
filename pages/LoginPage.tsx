@@ -14,15 +14,15 @@ const getRoleStyle = (role: Role) => {
     }
 };
 
-const PinInputDisplay: React.FC<{ pinLength: number }> = ({ pinLength }) => (
+const PinInputDisplay: React.FC<{ pinLength: number }> = React.memo(({ pinLength }) => (
     <div className="flex justify-center items-center gap-4 my-6">
         {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className={`w-10 h-10 rounded-full border-2 transition-colors duration-200 ${index < pinLength ? 'bg-accent border-accent' : 'border-slate-600'}`}></div>
         ))}
     </div>
-);
+));
 
-const Numpad: React.FC<{ onInput: (value: string) => void, onBackspace: () => void, onClear: () => void }> = ({ onInput, onBackspace, onClear }) => {
+const Numpad: React.FC<{ onInput: (value: string) => void, onBackspace: () => void, onClear: () => void }> = React.memo(({ onInput, onBackspace, onClear }) => {
     const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
     return (
         <div className="grid grid-cols-3 gap-3">
@@ -31,30 +31,26 @@ const Numpad: React.FC<{ onInput: (value: string) => void, onBackspace: () => vo
             ))}
             <Button onClick={onClear} className="py-5 text-lg bg-slate-700/80 hover:bg-slate-600">Limpiar</Button>
             <Button onClick={() => onInput('0')} className="py-5 text-2xl font-bold bg-slate-800/80 hover:bg-slate-700">0</Button>
-            <Button onClick={onBackspace} className="py-5 text-lg bg-slate-700/80 hover:bg-slate-600"><Icon name="fa-backspace" /></Button>
+            <Button onClick={onBackspace} className="py-5 text-lg bg-slate-700/80 hover:bg-slate-600" aria-label="Borrar"><Icon name="fa-backspace" /></Button>
         </div>
     );
-};
+});
 
 const LoginPage: React.FC<{ onLoginSuccess: (worker: Worker) => void }> = ({ onLoginSuccess }) => {
     const { state, showNotification } = useContext(DataContext);
     const [view, setView] = useState<LoginView>('initial');
     const [containerHeight, setContainerHeight] = useState<string | number>('auto');
-
-    // --- REFS ---
     const adminRef = useRef<HTMLDivElement>(null!);
     const workerRef = useRef<HTMLDivElement>(null!);
     const initialRef = useRef<HTMLDivElement>(null!);
     const usernameInputRef = useRef<HTMLInputElement>(null);
-
-    // --- STATE ---
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
     const [pin, setPin] = useState('');
 
     // --- LOGIC ---
-    const handleAdminLogin = (e: React.FormEvent) => {
+    const handleAdminLogin = useCallback((e: React.FormEvent) => {
         e.preventDefault();
         if (username === 'isarias' && password === 'isvanis971226*') {
             onLoginSuccess({ id: 0, name: 'Administrador', role: 'Admin', pin: '0000' });
@@ -62,7 +58,7 @@ const LoginPage: React.FC<{ onLoginSuccess: (worker: Worker) => void }> = ({ onL
             showNotification('Acceso Denegado', 'Credenciales de administrador incorrectas.', true);
             setPassword('');
         }
-    };
+    }, [username, password, onLoginSuccess, showNotification]);
 
     const verifyPin = useCallback((finalPin: string) => {
         if (selectedWorker && finalPin === selectedWorker.pin) {
@@ -73,7 +69,7 @@ const LoginPage: React.FC<{ onLoginSuccess: (worker: Worker) => void }> = ({ onL
         }
     }, [selectedWorker, onLoginSuccess, showNotification]);
     
-    const handlePinInput = (value: string) => {
+    const handlePinInput = useCallback((value: string) => {
         if (pin.length < 4) {
             const newPin = pin + value;
             setPin(newPin);
@@ -81,21 +77,21 @@ const LoginPage: React.FC<{ onLoginSuccess: (worker: Worker) => void }> = ({ onL
                  setTimeout(() => verifyPin(newPin), 100);
             }
         }
-    };
+    }, [pin, verifyPin]);
 
-    const handleBackspace = () => setPin(p => p.slice(0, -1));
-    const handleClear = () => setPin('');
+    const handleBackspace = useCallback(() => setPin(p => p.slice(0, -1)), []);
+    const handleClear = useCallback(() => setPin(''), []);
     
-    const goToView = (newView: LoginView) => {
+    const goToView = useCallback((newView: LoginView) => {
       if (view === 'admin') { setUsername(''); setPassword(''); }
       if (view === 'worker') { setSelectedWorker(null); setPin(''); }
       setView(newView);
-    };
+    }, [view]);
     
-    const handleGoBackToWorkerSelect = () => {
+    const handleGoBackToWorkerSelect = useCallback(() => {
         setSelectedWorker(null);
         setPin('');
-    };
+    }, []);
 
     // --- EFFECTS ---
     useEffect(() => {
