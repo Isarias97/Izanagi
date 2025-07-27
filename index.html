@@ -1,62 +1,42 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, minimal-ui" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Izanagi" />
     <meta name="theme-color" content="#002A8F" />
-    <meta name="background-color" content="#002A8F" />
-    <meta name="display" content="fullscreen" />
     <title>Izanagi Sales System</title>
     <meta name="description" content="Sistema de ventas, inventario y gestión para negocios modernos. Rápido, seguro y optimizado para móvil." />
     <meta name="application-name" content="Izanagi Sales System" />
-    <meta name="theme-color" content="#002A8F" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Izanagi" />
-    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="msapplication-TileColor" content="#002A8F" />
     <meta name="msapplication-tap-highlight" content="no" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
     <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png" />
-    <meta name="apple-touch-startup-image" content="/splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px)" />
-    <meta name="apple-touch-startup-image" content="/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px)" />
-    <meta name="apple-touch-startup-image" content="/splash-1242x2208.png" media="(device-width: 414px) and (device-height: 736px)" />
-    <meta name="apple-touch-startup-image" content="/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px)" />
-    <meta name="apple-touch-startup-image" content="/splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px)" />
-    <meta name="apple-touch-startup-image" content="/splash-1242x2688.png" media="(device-width: 414px) and (device-height: 896px)" />
-    <meta name="apple-touch-startup-image" content="/splash-1536x2048.png" media="(device-width: 768px) and (device-height: 1024px)" />
-    <meta name="apple-touch-startup-image" content="/splash-1668x2224.png" media="(device-width: 834px) and (device-height: 1112px)" />
-    <meta name="apple-touch-startup-image" content="/splash-1668x2388.png" media="(device-width: 834px) and (device-height: 1194px)" />
-    <meta name="apple-touch-startup-image" content="/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px)" />
-    <meta name="display" content="standalone" />
-    <meta name="orientation" content="portrait" />
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="stylesheet" href="/index.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              primary: '#002A8F', // Azul bandera cubana
-              secondary: '#CF142B', // Rojo bandera cubana
-              accent: '#FFFFFF', // Blanco bandera cubana
+              primary: '#002A8F',
+              secondary: '#CF142B',
+              accent: '#FFFFFF',
               success: '#4caf50',
               danger: '#f44336',
               warning: '#ff9800',
-              'dark-bg': '#002A8F', // Fondo azul bandera cubana
-              'dark-card': 'rgba(0, 42, 143, 0.7)', // Azul translúcido
-              'light-text': '#FFFFFF', // Blanco
+              'dark-bg': '#002A8F',
+              'dark-card': 'rgba(0, 42, 143, 0.7)',
+              'light-text': '#FFFFFF',
             },
             boxShadow: {
               '3d': '0 10px 20px 0 rgba(0,42,143,0.25), 0 2px 4px 0 rgba(207,20,43,0.15)',
@@ -73,78 +53,7 @@
         },
       };
     </script>
-    <style>
-        html {
-            touch-action: manipulation;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #002A8F 0%, #CF142B 100%);
-            color: #FFFFFF;
-            min-height: 100vh;
-            perspective: 1200px;
-            -webkit-tap-highlight-color: rgba(207,20,43,0.2); /* Android tap color */
-            overflow-x: hidden;
-        }
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-        .data-table tr:nth-child(even) {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-        .recharts-tooltip-wrapper {
-          background-color: #002A8F !important;
-          border: 1px solid #CF142B !important;
-          border-radius: 0.5rem !important;
-        }
-        .recharts-text, .recharts-legend-item-text {
-          fill: #FFFFFF !important;
-        }
-        /* Efectos 3D globales */
-        .card, .data-table, .modal, .panel, .box, .recharts-wrapper {
-          box-shadow: 0 10px 20px 0 rgba(0,42,143,0.25), 0 2px 4px 0 rgba(207,20,43,0.15);
-          border-radius: 1rem;
-          border: 1.5px solid #002A8F;
-          background: rgba(255,255,255,0.03);
-          transform-style: preserve-3d;
-          transition: box-shadow 0.3s, transform 0.3s;
-        }
-        .card:hover, .data-table:hover, .modal:hover, .panel:hover, .box:hover, .recharts-wrapper:hover {
-          box-shadow: 0 20px 40px 0 rgba(0,42,143,0.35), 0 4px 8px 0 rgba(207,20,43,0.22);
-          transform: translateY(-8px) scale(1.03) rotateY(4deg);
-        }
-        .card, .data-table, .modal, .panel, .box, .recharts-wrapper {
-            margin-bottom: 1.5rem;
-        }
-        @media (max-width: 640px) {
-            body {
-                font-size: 1.08rem;
-            }
-            .card, .data-table, .modal, .panel, .box, .recharts-wrapper {
-                margin-bottom: 2.5rem;
-                padding: 0.5rem !important;
-            }
-            .p-4, .sm\:p-6, .lg\:p-8 {
-                padding: 0.5rem !important;
-            }
-            .gap-4, .gap-6 {
-                gap: 1.25rem !important;
-            }
-            .space-y-4 > :not([hidden]) ~ :not([hidden]) {
-                margin-top: 1.25rem !important;
-            }
-        }
-        /* Scrollbar personalizado cubano */
-        ::-webkit-scrollbar {
-          width: 10px;
-          background: #002A8F;
-        }
-        ::-webkit-scrollbar-thumb {
-          background: #CF142B;
-          border-radius: 8px;
-        }
-    </style>
-  <script type="importmap">
+    <script type="importmap">
 {
   "imports": {
     "react/": "https://esm.sh/react@^19.1.0/",
@@ -155,21 +64,12 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <meta name="theme-color" content="#CF142B" />
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Izanagi">
-    <link rel="apple-touch-icon" href="/icon-192.png">
-</head>
+  </head>
   <body>
     <div id="root"></div>
     <footer class="w-full text-center py-4 bg-primary text-accent shadow-3d-card fixed bottom-0 left-0 z-50" style="font-weight: bold; letter-spacing: 1px; font-size: 1.1rem; box-shadow: 0 2px 8px 0 rgba(0,42,143,0.18), 0 1.5px 4px 0 rgba(207,20,43,0.12);">
       Creado por Isarias
     </footer>
-  <script type="module" src="/index.tsx"></script>
-</body>
+    <script type="module" src="/index.tsx"></script>
+  </body>
 </html>

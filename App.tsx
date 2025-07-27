@@ -1,19 +1,22 @@
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+// Refactor profesional: modularización, lazy loading, comentarios, accesibilidad y performance
+import React, { useState, useEffect, useCallback, useMemo, useRef, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Page, AppState, Category, Product, SaleReport, SaleItem, Worker, AuditReport, TransactionLogEntry } from './types';
 import { getInitialState } from './state';
 import { DataContext } from './context';
-import PosPage from './pages/PosPage';
-import InventoryPage from './pages/InventoryPage';
-import ReportsPage from './pages/ReportsPage';
-import ConfigPage from './pages/ConfigPage';
-import PurchasesPage from './pages/PurchasesPage';
-import WorkersPage from './pages/WorkersPage';
-import AIAssistantPage from './pages/AIAssistantPage';
-import LoginPage from './pages/LoginPage';
-import { PayrollPage } from './pages/PayrollPage';
 import { Icon } from './components/ui';
+
+// Lazy load de páginas principales para performance
+const PosPage = lazy(() => import('./pages/PosPage'));
+const InventoryPage = lazy(() => import('./pages/InventoryPage'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage'));
+const ConfigPage = lazy(() => import('./pages/ConfigPage'));
+const PurchasesPage = lazy(() => import('./pages/PurchasesPage'));
+const WorkersPage = lazy(() => import('./pages/WorkersPage'));
+const AIAssistantPage = lazy(() => import('./pages/AIAssistantPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const PayrollPage = lazy(() => import('./pages/PayrollPage'));
 
 const loadAndMigrateState = (): AppState => {
   try {
@@ -233,14 +236,14 @@ function AppRoutes({
         <main className="flex-1 w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-4 md:py-6 lg:py-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <Routes>
-              <Route path="/" element={<PosPage />} />
-              <Route path="/compras" element={<PurchasesPage />} />
-              <Route path="/inventario" element={<InventoryPage />} />
-              <Route path="/reportes" element={<ReportsPage />} />
-              <Route path="/nomina" element={<PayrollPage />} />
-              <Route path="/trabajadores" element={<WorkersPage />} />
-              <Route path="/ai" element={<AIAssistantPage />} />
-              <Route path="/config" element={<ConfigPage />} />
+              <Route path="/" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><PosPage /></Suspense>} />
+              <Route path="/compras" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><PurchasesPage /></Suspense>} />
+              <Route path="/inventario" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><InventoryPage /></Suspense>} />
+              <Route path="/reportes" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><ReportsPage /></Suspense>} />
+              <Route path="/nomina" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><PayrollPage /></Suspense>} />
+              <Route path="/trabajadores" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><WorkersPage /></Suspense>} />
+              <Route path="/ai" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><AIAssistantPage /></Suspense>} />
+              <Route path="/config" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><ConfigPage /></Suspense>} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </div>
@@ -412,7 +415,9 @@ const App: React.FC = () => {
   if (!currentUser) {
     return (
       <DataContext.Provider value={contextValue}>
-        <LoginPage onLoginSuccess={handleLoginSuccess} />
+        <Suspense fallback={<div className="p-8 text-center">Cargando...</div>}>
+          <LoginPage onLoginSuccess={handleLoginSuccess} />
+        </Suspense>
       </DataContext.Provider>
     );
   }
