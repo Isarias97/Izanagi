@@ -234,8 +234,8 @@ const PurchaseHistory: React.FC<{
     };
 
     return (
-        <Card>
-            <CardHeader icon="fa-history">Historial de Compras</CardHeader>
+    <Card>
+        <CardHeader icon="fa-history">Historial de Compras</CardHeader>
             <CardContent className="space-y-4">
                 {/* Botones de descarga */}
                 {purchases.length > 0 && (
@@ -260,34 +260,34 @@ const PurchaseHistory: React.FC<{
                 )}
                 
                 <div className="max-h-[80vh] overflow-y-auto">
-                    {purchases.length === 0 ? (
-                        <div className="text-center p-8 text-gray-500">No hay compras registradas.</div>
-                    ) : (
-                        <div className="space-y-4">
-                            {[...purchases].reverse().map(p => (
-                                <div key={p.id} className="bg-slate-800/60 rounded-lg p-4 active:scale-95 touch-manipulation no-hover">
-                                    <div className="flex justify-between items-center border-b border-slate-700 pb-2 mb-2">
-                                        <h4 className="font-bold">Compra #{p.id}</h4>
-                                        <span className="text-sm text-gray-400">{new Date(p.date).toLocaleString()}</span>
-                                    </div>
-                                    <ul className="text-sm space-y-1 mb-2">
-                                        {p.items.map((i: any) => (
-                                            <li key={`${p.id}-${i.productId}`} className="flex justify-between">
-                                                <span>{i.quantity} x {i.name}</span>
-                                                <span className="text-gray-400">${i.costPrice.toFixed(2)} c/u</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <div className="text-right font-bold text-accent border-t border-slate-700 pt-2 mt-2">
-                                        Total: ${p.totalCost.toFixed(2)}
-                                    </div>
-                                </div>
-                            ))}
+            {purchases.length === 0 ? (
+                <div className="text-center p-8 text-gray-500">No hay compras registradas.</div>
+            ) : (
+                <div className="space-y-4">
+                    {[...purchases].reverse().map(p => (
+                        <div key={p.id} className="bg-slate-800/60 rounded-lg p-4 active:scale-95 touch-manipulation no-hover">
+                            <div className="flex justify-between items-center border-b border-slate-700 pb-2 mb-2">
+                                <h4 className="font-bold">Compra #{p.id}</h4>
+                                <span className="text-sm text-gray-400">{new Date(p.date).toLocaleString()}</span>
+                            </div>
+                            <ul className="text-sm space-y-1 mb-2">
+                                {p.items.map((i: any) => (
+                                    <li key={`${p.id}-${i.productId}`} className="flex justify-between">
+                                        <span>{i.quantity} x {i.name}</span>
+                                        <span className="text-gray-400">${i.costPrice.toFixed(2)} c/u</span>
+                                    </li>
+                                ))}
+                            </ul>
+                            <div className="text-right font-bold text-accent border-t border-slate-700 pt-2 mt-2">
+                                Total: ${p.totalCost.toFixed(2)}
+                            </div>
                         </div>
-                    )}
+                    ))}
                 </div>
-            </CardContent>
-        </Card>
+            )}
+                </div>
+        </CardContent>
+    </Card>
     );
 });
 

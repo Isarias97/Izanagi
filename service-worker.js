@@ -165,7 +165,7 @@ self.addEventListener('fetch', event => {
   
   const { strategy, cacheName } = getCacheStrategy(request);
   
-  event.respondWith(
+    event.respondWith(
     (async () => {
       try {
         let response;
@@ -212,12 +212,12 @@ self.addEventListener('fetch', event => {
             // Cache First para imágenes
             response = await getCachedResponse(request);
             if (response) {
-              return response;
+          return response;
             }
             
             response = await fetch(request);
             await cacheResponse(request, response, cacheName);
-            return response;
+          return response;
             
           default:
             return fetch(request);

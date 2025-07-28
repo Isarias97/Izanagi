@@ -98,9 +98,9 @@ export class PDFReportGenerator {
     this.doc.text(title, PDF_CONFIG.margin, this.currentY);
     this.currentY += 8;
 
-    const summaryData = Object.entries(summary).map(([key, value]) => [
+    const summaryData: string[][] = Object.entries(summary).map(([key, value]) => [
       key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
-      typeof value === 'number' ? value.toFixed(2) : value
+      typeof value === 'number' ? value.toFixed(2) : String(value)
     ]);
 
     autoTable(this.doc, {
@@ -284,22 +284,22 @@ export class PDFReportGenerator {
   }
 
   // Generar reporte de auditoría
-  public generateAuditReport(auditReports: AuditReport[], options: ReportOptions): void {
+  public generateAuditReport(auditReports: AuditReport[], options: ReportOptions & { salesOfDay?: SaleReport[], salesOfShift?: SaleReport[] }): void {
     this.addHeader(options);
 
     // Resumen de auditorías
     const summary = {
-      totalAudits: auditReports.length,
-      totalDiscrepancies: auditReports.filter(a => 
-        a.discrepancies.diffCUP !== 0 || 
-        a.discrepancies.diffMLC !== 0 || 
+      'Total de auditorías': auditReports.length,
+      'Auditorías con discrepancias': auditReports.filter(a =>
+        a.discrepancies.diffCUP !== 0 ||
+        a.discrepancies.diffMLC !== 0 ||
         a.discrepancies.diffUSD !== 0
       ).length,
-      averageDiscrepancy: auditReports.length > 0 ? 
+      'Promedio de discrepancia (CUP)': auditReports.length > 0 ?
         auditReports.reduce((sum, a) => sum + Math.abs(a.discrepancies.diffCUP), 0) / auditReports.length : 0
     };
 
-    this.addSummary(summary, 'Resumen de Auditorías');
+    this.addSummary(summary, 'Resumen de Auditorías de Cierre de Caja');
 
     // Tabla de auditorías
     if (auditReports.length > 0) {
@@ -308,62 +308,141 @@ export class PDFReportGenerator {
       const auditData = auditReports.map(a => [
         new Date(a.date).toLocaleString('es-ES'),
         a.closedByWorkerName,
-        `$${a.systemTotals.expectedCUP.toFixed(2)}`,
-        `$${a.countedTotals.countedCUP.toFixed(2)}`,
+        `${a.systemTotals.expectedCUP.toFixed(2)} CUP`,
+        `${a.countedTotals.countedCUP.toFixed(2)} CUP`,
         this.formatDiscrepancy(a.discrepancies.diffCUP),
         this.formatDiscrepancy(a.discrepancies.diffMLC),
         this.formatDiscrepancy(a.discrepancies.diffUSD)
       ]);
 
       this.addTable(
-        ['Fecha', 'Cerrado Por', 'Esperado CUP', 'Contado CUP', 'Dif. CUP', 'Dif. MLC', 'Dif. USD'],
+        ['Fecha', 'Cerrado por', 'Esperado (CUP)', 'Contado (CUP)', 'Diferencia CUP', 'Diferencia MLC', 'Diferencia USD'],
         auditData,
         'Historial de Cierres de Caja'
       );
 
-      // Detalle de conteo de efectivo si está disponible
+      // Detalle de conteo de efectivo y productos vendidos
       const auditsWithCashCount = auditReports.filter(a => a.cashCountDetails);
       if (auditsWithCashCount.length > 0) {
         this.checkPageBreak(300);
         this.doc.setFontSize(PDF_CONFIG.fontSize.subtitle);
         this.doc.setFont('helvetica', 'bold');
-        this.doc.text('Detalle de Conteo de Efectivo', PDF_CONFIG.margin, this.currentY);
+        this.doc.text('Detalle de Conteo de Efectivo y Productos Vendidos', PDF_CONFIG.margin, this.currentY);
         this.currentY += 8;
 
         auditsWithCashCount.forEach((audit, index) => {
           if (index > 0) this.currentY += 5;
-          
+
           this.doc.setFontSize(PDF_CONFIG.fontSize.normal);
           this.doc.setFont('helvetica', 'bold');
-          this.doc.text(`Auditoría #${audit.id} - ${new Date(audit.date).toLocaleString('es-ES')}`, PDF_CONFIG.margin, this.currentY);
+          this.doc.text(`Cierre de Caja #${audit.id} - ${new Date(audit.date).toLocaleString('es-ES')}`, PDF_CONFIG.margin, this.currentY);
           this.currentY += 5;
 
-          const cashData = Object.entries(audit.cashCountDetails!).map(([denomination, count]) => [
-            denomination,
-            count.toString(),
-            `$${(parseFloat(denomination) * count).toFixed(2)}`
-          ]);
+          // Tabla de denominaciones
+          if (audit.cashCountDetails) {
+            const cashData = Object.entries(audit.cashCountDetails).map(([denomination, count]) => [
+              `${count} x ${parseFloat(denomination).toFixed(2)} CUP`,
+              `${(parseFloat(denomination) * count).toFixed(2)} CUP`
+            ]);
+            this.addTable(['Denominación', 'Subtotal'], cashData, 'Detalle de Denominaciones Contadas');
+          }
 
-          autoTable(this.doc, {
-            startY: this.currentY,
-            head: [['Denominación', 'Cantidad', 'Subtotal']],
-            body: cashData,
-            theme: 'striped',
-            headStyles: {
-              fillColor: [71, 85, 105],
-              textColor: 255,
-              fontStyle: 'bold'
-            },
-            bodyStyles: {
-              textColor: [30, 41, 59],
-              fontSize: PDF_CONFIG.fontSize.small
-            },
-            margin: { left: PDF_CONFIG.margin + 10, right: PDF_CONFIG.margin }
-          });
+          // Productos vendidos en el turno/corte
+          if (options.salesOfShift && options.salesOfShift.length > 0) {
+            // Agrupar productos por nombre
+            const productMap: { [name: string]: { cantidad: number, total: number, inversion: number, ganancia: number } } = {};
+            options.salesOfShift.forEach(sale => {
+              sale.items.forEach(item => {
+                if (!productMap[item.name]) {
+                  productMap[item.name] = { cantidad: 0, total: 0, inversion: 0, ganancia: 0 };
+                }
+                productMap[item.name].cantidad += item.quantity;
+                productMap[item.name].total += item.price * item.quantity;
+                productMap[item.name].inversion += item.costPrice * item.quantity;
+                productMap[item.name].ganancia += (item.price - item.costPrice) * item.quantity;
+              });
+            });
+            const productosData = Object.entries(productMap).map(([nombre, datos]) => [
+              nombre,
+              datos.cantidad.toString(),
+              `${datos.total.toFixed(2)} CUP`,
+              `${datos.inversion.toFixed(2)} CUP`,
+              `${datos.ganancia.toFixed(2)} CUP`
+            ]);
+            this.addTable(
+              ['Producto', 'Cantidad Vendida', 'Total Recaudado', 'Inversión Recuperada', 'Ganancia'],
+              productosData,
+              'Productos Vendidos en el Turno/Corte'
+            );
+          }
 
-          this.currentY = (this.doc as any).lastAutoTable.finalY + 5;
+          // Resumen de dinero recogido y división de ganancia
+          if (options.salesOfShift && options.salesOfShift.length > 0) {
+            const totalRecaudado = options.salesOfShift.reduce((sum, sale) => sum + sale.total, 0);
+            const inversionRecuperada = options.salesOfShift.reduce((sum, sale) => sum + sale.items.reduce((s, i) => s + (i.costPrice * i.quantity), 0), 0);
+            const gananciaTotal = totalRecaudado - inversionRecuperada;
+            const paraPagos = gananciaTotal * 0.4;
+            const paraReinversion = gananciaTotal * 0.6;
+            const resumenData = [
+              ['Total contado en caja', `${audit.countedTotals.countedCUP.toFixed(2)} CUP`],
+              ['Total recaudado por ventas', `${totalRecaudado.toFixed(2)} CUP`],
+              ['Inversión recuperada', `${inversionRecuperada.toFixed(2)} CUP`],
+              ['Ganancia total', `${gananciaTotal.toFixed(2)} CUP`],
+              ['Para pagos a trabajadores (40%)', `${paraPagos.toFixed(2)} CUP`],
+              ['Para reinversión (60%)', `${paraReinversion.toFixed(2)} CUP`]
+            ];
+            this.addTable(['Concepto', 'Monto'], resumenData, 'Resumen de Dinero Recogido y División de Ganancia');
+          }
         });
       }
+    }
+
+    // Resumen de ventas del día
+    if (options.salesOfDay && options.salesOfDay.length > 0) {
+      this.addNewPage();
+      this.doc.setFontSize(PDF_CONFIG.fontSize.title);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.text('Resumen de Ventas del Día', this.pageWidth / 2, this.currentY, { align: 'center' });
+      this.currentY += 10;
+      const totalVentas = options.salesOfDay.reduce((sum, sale) => sum + sale.total, 0);
+      const totalItems = options.salesOfDay.reduce((sum, sale) => sum + sale.itemsCount, 0);
+      const inversionDia = options.salesOfDay.reduce((sum, sale) => sum + sale.items.reduce((s, i) => s + (i.costPrice * i.quantity), 0), 0);
+      const gananciaDia = totalVentas - inversionDia;
+      const resumenDia = [
+        ['Total de ventas', `${totalVentas.toFixed(2)} CUP`],
+        ['Total de artículos vendidos', totalItems.toString()],
+        ['Inversión recuperada', `${inversionDia.toFixed(2)} CUP`],
+        ['Ganancia total', `${gananciaDia.toFixed(2)} CUP`],
+        ['Para pagos a trabajadores (40%)', `${(gananciaDia * 0.4).toFixed(2)} CUP`],
+        ['Para reinversión (60%)', `${(gananciaDia * 0.6).toFixed(2)} CUP`]
+      ];
+      this.addTable(['Concepto', 'Monto'], resumenDia, 'Resumen Financiero del Día');
+
+      // Productos vendidos en el día
+      const productMap: { [name: string]: { cantidad: number, total: number, inversion: number, ganancia: number } } = {};
+      options.salesOfDay.forEach(sale => {
+        sale.items.forEach(item => {
+          if (!productMap[item.name]) {
+            productMap[item.name] = { cantidad: 0, total: 0, inversion: 0, ganancia: 0 };
+          }
+          productMap[item.name].cantidad += item.quantity;
+          productMap[item.name].total += item.price * item.quantity;
+          productMap[item.name].inversion += item.costPrice * item.quantity;
+          productMap[item.name].ganancia += (item.price - item.costPrice) * item.quantity;
+        });
+      });
+      const productosData = Object.entries(productMap).map(([nombre, datos]) => [
+        nombre,
+        datos.cantidad.toString(),
+        `${datos.total.toFixed(2)} CUP`,
+        `${datos.inversion.toFixed(2)} CUP`,
+        `${datos.ganancia.toFixed(2)} CUP`
+      ]);
+      this.addTable(
+        ['Producto', 'Cantidad Vendida', 'Total Recaudado', 'Inversión Recuperada', 'Ganancia'],
+        productosData,
+        'Productos Vendidos en el Día'
+      );
     }
   }
 
@@ -522,7 +601,12 @@ export class PDFReportGenerator {
 
     if (data.auditReports.length > 0) {
       this.addNewPage();
-      this.generateAuditReport(data.auditReports, { ...options, title: 'Sección: Reporte de Auditoría' });
+      this.generateAuditReport(data.auditReports, { 
+        ...options, 
+        title: 'Sección: Reporte de Auditoría',
+        salesOfDay: data.sales,
+        salesOfShift: data.sales // Para el reporte integral, usamos todas las ventas como turno
+      });
     }
   }
 
@@ -569,7 +653,7 @@ export const generateTransactionsPDF = (transactions: TransactionLogEntry[], opt
   generator.download(`Reporte_Transacciones_${new Date().toISOString().split('T')[0]}.pdf`);
 };
 
-export const generateAuditPDF = (auditReports: AuditReport[], options: ReportOptions): void => {
+export const generateAuditPDF = (auditReports: AuditReport[], options: ReportOptions & { salesOfDay?: SaleReport[], salesOfShift?: SaleReport[] }): void => {
   const generator = new PDFReportGenerator();
   generator.generateAuditReport(auditReports, options);
   generator.download(`Reporte_Auditoria_${new Date().toISOString().split('T')[0]}.pdf`);

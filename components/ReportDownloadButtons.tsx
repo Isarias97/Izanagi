@@ -51,7 +51,11 @@ const ReportDownloadButtons: React.FC<ReportDownloadButtonsProps> = ({
           break;
         
         case 'Auditoría':
-          generateAuditPDF(state.auditReports, options);
+          generateAuditPDF(state.auditReports, {
+            ...options,
+            salesOfDay: state.reports,
+            salesOfShift: state.reports
+          });
           break;
         
         case 'Compras':

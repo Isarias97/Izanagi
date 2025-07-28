@@ -2,7 +2,7 @@
 import React, { useState, useContext, useMemo, useCallback } from 'react';
 import { DataContext } from '../context';
 import { Card, CardHeader, CardContent, InputGroup, Input, Button, Icon } from '../components/ui';
-import { TransactionType, AuditReport } from '../types';
+import { TransactionType, AuditReport, SaleReport } from '../types';
 import { getPeriodDates, getTransactionTypeStyle, DiscrepancyDisplay } from '../utils';
 import ReportDownloadButtons from '../components/ReportDownloadButtons';
 
@@ -260,7 +260,8 @@ const CapitalTab: React.FC<{
 const AuditTab: React.FC<{
   auditReports: AuditReport[];
   workerName?: string;
-}> = React.memo(({ auditReports, workerName }) => (
+  salesReports: SaleReport[];
+}> = React.memo(({ auditReports, workerName, salesReports }) => (
                     <div className="space-y-6">
                         {/* Botones de descarga específicos para auditoría */}
                         <div className="flex justify-between items-center">
@@ -275,7 +276,9 @@ const AuditTab: React.FC<{
                                   title: 'Reporte de Auditoría',
                                   subtitle: 'Sistema Izanagi',
                                   includeDetails: false,
-                                  workerName
+                                  workerName,
+                                  salesOfDay: salesReports,
+                                  salesOfShift: salesReports
                                 });
                               }}
                               className="text-sm"
@@ -291,7 +294,9 @@ const AuditTab: React.FC<{
                                   title: 'Reporte Detallado de Auditoría',
                                   subtitle: 'Sistema Izanagi',
                                   includeDetails: true,
-                                  workerName
+                                  workerName,
+                                  salesOfDay: salesReports,
+                                  salesOfShift: salesReports
                                 });
                               }}
                               className="text-sm"
@@ -301,7 +306,7 @@ const AuditTab: React.FC<{
                           </div>
                         </div>
                         
-                         <div className="bg-slate-900/50 p-4 rounded-lg">
+                        <div className="bg-slate-900/50 p-4 rounded-lg">
                             <h3 className="text-lg font-semibold">Historial de Cierres de Caja</h3>
                             <p className="text-sm text-gray-400">Registro de todas las auditorías y discrepancias.</p>
                         </div>
@@ -477,7 +482,7 @@ const ReportsPage: React.FC = () => {
           <CapitalTab capitalData={capitalData} investmentBalance={state.investmentBalance} />
         )}
         {activeTab === 'audit' && (
-          <AuditTab auditReports={state.auditReports} workerName={currentWorker} />
+                                  <AuditTab auditReports={state.auditReports} workerName={currentWorker} salesReports={state.reports} />
         )}
             </CardContent>
             <style>{`

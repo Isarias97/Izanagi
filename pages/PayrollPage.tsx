@@ -51,8 +51,8 @@ const PayrollHistory: React.FC<{
     };
 
     return (
-        <Card>
-            <CardHeader icon="fa-history">Historial de Nóminas</CardHeader>
+                    <Card>
+                        <CardHeader icon="fa-history">Historial de Nóminas</CardHeader>
             <CardContent className="space-y-4">
                 {/* Botones de descarga */}
                 {payrollReports.length > 0 && (
@@ -125,8 +125,8 @@ const PayrollHistory: React.FC<{
                                 </div>
                             )}
                         </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
     );
 });
 
