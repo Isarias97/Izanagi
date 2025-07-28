@@ -1,0 +1,27 @@
+
+<svg width="1668" height="2388" viewBox="0 0 1668 2388" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="splashGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#002A8F;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#CF142B;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fondo con gradiente -->
+  <rect width="1668" height="2388" fill="url(#splashGrad)"/>
+  
+  <!-- Icono centrado -->
+  <g transform="translate(708.9, 1068.9)">
+    <rect width="250.2" height="250.2" rx="50.04" fill="#FFFFFF" opacity="0.9"/>
+    <g transform="translate(50.04, 50.04) scale(1.5011999999999999)">
+      <rect x="10" y="30" width="80" height="50" rx="5" fill="#002A8F"/>
+      <rect x="20" y="40" width="60" height="15" rx="2" fill="#4CAF50"/>
+      <text x="50" y="50" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="8" font-weight="bold">IZANAGI</text>
+      <rect x="5" y="80" width="90" height="8" rx="4" fill="#CF142B"/>
+    </g>
+  </g>
+  
+  <!-- Texto del sistema -->
+  <text x="834" y="1394.16" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="66.72" font-weight="bold">Sistema Izanagi</text>
+  <text x="834" y="1494.24" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="33.36" opacity="0.8">Gestión Comercial</text>
+</svg>

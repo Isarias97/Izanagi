@@ -17,7 +17,9 @@
     "test": "vitest",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write .",
-    "analyze": "vite build --analyze"
+    "analyze": "vite build --analyze",
+    "generate-pwa-assets": "node scripts/generate-pwa-assets.js",
+    "pwa-build": "npm run generate-pwa-assets && npm run build"
   },
   "dependencies": {
     "@google/genai": "^1.9.0",

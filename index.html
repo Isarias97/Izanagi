@@ -1,28 +1,113 @@
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" dir="ltr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, minimal-ui" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, shrink-to-fit=no" />
+    
+    <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="theme-color" content="#002A8F" />
-    <title>Izanagi Sales System</title>
-    <meta name="description" content="Sistema de ventas, inventario y gestión para negocios modernos. Rápido, seguro y optimizado para móvil." />
-    <meta name="application-name" content="Izanagi Sales System" />
+    <meta name="apple-mobile-web-app-title" content="Izanagi" />
+    <meta name="application-name" content="Sistema Izanagi" />
     <meta name="msapplication-TileColor" content="#002A8F" />
+    <meta name="msapplication-TileImage" content="/icon-144.png" />
+    <meta name="msapplication-config" content="none" />
     <meta name="msapplication-tap-highlight" content="no" />
+    
+    <!-- Theme and Colors -->
+    <meta name="theme-color" content="#002A8F" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#002A8F" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    
+    <!-- SEO and Content -->
+    <title>Sistema Izanagi - Gestión Comercial</title>
+    <meta name="description" content="Sistema completo de ventas, inventario, nómina y gestión financiera. Optimizado para móviles con experiencia nativa. Ideal para negocios que requieren control total y reportes profesionales." />
+    <meta name="keywords" content="sistema de ventas, inventario, nómina, gestión comercial, PWA, punto de venta, reportes" />
+    <meta name="author" content="Isarias" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://izanagi.vercel.app/" />
+    <meta property="og:title" content="Sistema Izanagi - Gestión Comercial" />
+    <meta property="og:description" content="Sistema completo de ventas, inventario, nómina y gestión financiera. Optimizado para móviles con experiencia nativa." />
+    <meta property="og:image" content="https://izanagi.vercel.app/icon-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:site_name" content="Sistema Izanagi" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://izanagi.vercel.app/" />
+    <meta property="twitter:title" content="Sistema Izanagi - Gestión Comercial" />
+    <meta property="twitter:description" content="Sistema completo de ventas, inventario, nómina y gestión financiera. Optimizado para móviles con experiencia nativa." />
+    <meta property="twitter:image" content="https://izanagi.vercel.app/icon-512.png" />
+    
+    <!-- Mobile Optimizations -->
     <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
-    <link rel="manifest" href="/manifest.json" />
+    <meta name="apple-touch-fullscreen" content="yes" />
+    <meta name="apple-mobile-web-app-orientations" content="portrait" />
+    <meta name="mobile-web-app-orientations" content="portrait" />
+    
+    <!-- Security -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=()" />
+    
+    <!-- Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" />
+    <link rel="dns-prefetch" href="https://esm.sh" />
+    
+    <!-- Manifest and Icons -->
+    <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon-72.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icon-72.png" />
+    <link rel="icon" type="image/png" sizes="72x72" href="/icon-72.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/icon-96.png" />
+    <link rel="icon" type="image/png" sizes="128x128" href="/icon-128.png" />
+    <link rel="icon" type="image/png" sizes="144x144" href="/icon-144.png" />
+    <link rel="icon" type="image/png" sizes="152x152" href="/icon-152.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="384x384" href="/icon-384.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="72x72" href="/icon-72.png" />
+    <link rel="apple-touch-icon" sizes="96x96" href="/icon-96.png" />
+    <link rel="apple-touch-icon" sizes="128x128" href="/icon-128.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/icon-144.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon-152.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="384x384" href="/icon-384.png" />
     <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png" />
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    <link rel="stylesheet" href="/index.css">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    
+    <!-- Splash Screens for iOS -->
+    <link rel="apple-touch-startup-image" href="/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash-1668x2388.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash-1536x2048.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash-1242x2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/index.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration -->
     <script>
       tailwind.config = {
         theme: {
@@ -53,23 +138,99 @@
         },
       };
     </script>
+    
+    <!-- Import Map for ES Modules -->
     <script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.1.0/",
-    "react": "https://esm.sh/react@^19.1.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
-    "recharts": "https://esm.sh/recharts@^3.1.0",
-    "@google/genai": "https://esm.sh/@google/genai@^1.9.0"
-  }
-}
-</script>
+    {
+      "imports": {
+        "react/": "https://esm.sh/react@^19.1.0/",
+        "react": "https://esm.sh/react@^19.1.0",
+        "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+        "recharts": "https://esm.sh/recharts@^3.1.0",
+        "@google/genai": "https://esm.sh/@google/genai@^1.9.0"
+      }
+    }
+    </script>
+    
+    <!-- PWA Installation Prompt -->
+    <script>
+      // PWA Installation Logic
+      let deferredPrompt;
+      
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show custom install prompt
+        const installButton = document.getElementById('install-button');
+        if (installButton) {
+          installButton.style.display = 'block';
+          installButton.addEventListener('click', async () => {
+            if (deferredPrompt) {
+              deferredPrompt.prompt();
+              const { outcome } = await deferredPrompt.userChoice;
+              if (outcome === 'accepted') {
+                console.log('PWA installed successfully');
+              }
+              deferredPrompt = null;
+              installButton.style.display = 'none';
+            }
+          });
+        }
+      });
+      
+      // Handle successful installation
+      window.addEventListener('appinstalled', () => {
+        console.log('PWA was installed');
+        deferredPrompt = null;
+      });
+      
+      // Service Worker Registration
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
   </head>
-  <body>
+  <body class="bg-dark-bg text-light-text antialiased">
+    <!-- PWA Install Prompt -->
+    <div id="install-button" class="fixed top-4 right-4 z-50 hidden">
+      <button class="bg-primary text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+        <i class="fas fa-download"></i>
+        Instalar App
+      </button>
+    </div>
+    
+    <!-- Main App Container -->
     <div id="root"></div>
-    <footer class="w-full text-center py-4 bg-primary text-accent shadow-3d-card fixed bottom-0 left-0 z-50" style="font-weight: bold; letter-spacing: 1px; font-size: 1.1rem; box-shadow: 0 2px 8px 0 rgba(0,42,143,0.18), 0 1.5px 4px 0 rgba(207,20,43,0.12);">
+    
+    <!-- Footer -->
+    <footer class="w-full text-center py-4 bg-primary text-accent shadow-3d-card fixed bottom-0 left-0 z-40" style="font-weight: bold; letter-spacing: 1px; font-size: 1.1rem; box-shadow: 0 2px 8px 0 rgba(0,42,143,0.18), 0 1.5px 4px 0 rgba(207,20,43,0.12);">
       Creado por Isarias
     </footer>
+    
+    <!-- Main Script -->
     <script type="module" src="/index.tsx"></script>
+    
+    <!-- Offline Support -->
+    <script>
+      // Offline detection
+      window.addEventListener('online', () => {
+        document.body.classList.remove('offline');
+        console.log('App is online');
+      });
+      
+      window.addEventListener('offline', () => {
+        document.body.classList.add('offline');
+        console.log('App is offline');
+      });
+    </script>
   </body>
 </html>

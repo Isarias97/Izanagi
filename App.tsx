@@ -7,6 +7,7 @@ import { getInitialState } from './state';
 import { DataContext } from './context';
 import { Icon } from './components/ui';
 import MobileNavDrawer from './components/MobileNavDrawer';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 // Lazy load de páginas principales para performance
 const PosPage = lazy(() => import('./pages/PosPage'));
@@ -198,14 +199,8 @@ function AppRoutes({
   return (
     <DataContext.Provider value={contextValue}>
       <div className="flex flex-col min-h-screen bg-dark-bg w-full">
-        {/* Banner de instalación PWA */}
-        {showInstallBanner && (
-          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] bg-primary text-white rounded-xl shadow-2xl px-6 py-4 flex items-center gap-4 animate-fade-in" style={{maxWidth:'95vw'}}>
-            <span className="text-lg font-semibold"><i className="fas fa-download mr-2"/>Instala Izanagi en tu móvil</span>
-            <button className="ml-4 px-4 py-2 rounded-lg bg-accent text-primary font-bold shadow hover:bg-white/90 transition" onClick={handleInstallClick}>Instalar</button>
-            <button className="ml-2 text-white/80 hover:text-white text-xl" aria-label="Cerrar" onClick={()=>setShowInstallBanner(false)}>&times;</button>
-          </div>
-        )}
+        {/* Componente PWA Install Prompt */}
+        <PWAInstallPrompt />
         
         {/* Header mejorado con navegación móvil */}
         <header className="bg-primary shadow-lg sticky top-0 z-40 p-2 flex flex-row items-center justify-between gap-2 min-h-[56px] w-full max-w-screen-xl mx-auto">

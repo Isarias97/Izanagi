@@ -1,39 +1,170 @@
 {
   "id": "/",
-  "name": "Izanagi Sales System",
+  "name": "Sistema Izanagi - Gestión Comercial",
   "short_name": "Izanagi",
-  "description": "Sistema de ventas, inventario y gestión para negocios modernos. Rápido, seguro y optimizado para móvil. Experiencia PWA fullscreen.",
+  "description": "Sistema completo de ventas, inventario, nómina y gestión financiera. Optimizado para móviles con experiencia nativa. Ideal para negocios que requieren control total y reportes profesionales.",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "window-controls-overlay"],
   "background_color": "#002A8F",
   "theme_color": "#002A8F",
   "orientation": "portrait-primary",
   "scope": "/",
+  "lang": "es",
+  "dir": "ltr",
+  "categories": ["business", "productivity", "finance"],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+izanagi",
+      "url": "/?action=%s"
+    }
+  ],
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-96.png", 
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-128.png",
+      "sizes": "128x128", 
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png", 
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
     {
-      "name": "TPV (POS)",
-      "short_name": "TPV",
-      "description": "Ir directamente al punto de venta",
+      "name": "Punto de Venta",
+      "short_name": "POS",
+      "description": "Acceso directo al terminal de ventas",
       "url": "/#pos",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Inventario",
-      "short_name": "Inventario",
-      "description": "Gestionar inventario",
+      "short_name": "Stock",
+      "description": "Gestionar productos y categorías",
       "url": "/#inventory",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Reportes",
+      "short_name": "Reports",
+      "description": "Ver reportes y estadísticas",
+      "url": "/#reports",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Compras",
+      "short_name": "Buy",
+      "description": "Registrar compras de inventario",
+      "url": "/#purchases",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Nómina",
+      "short_name": "Payroll",
+      "description": "Gestionar pagos a trabajadores",
+      "url": "/#payroll",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ],
   "screenshots": [
-    { "src": "/screenshot-1.png", "sizes": "540x960", "type": "image/png" },
-    { "src": "/screenshot-2.png", "sizes": "540x960", "type": "image/png" }
+    {
+      "src": "/screenshot-1.png",
+      "sizes": "540x960",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Punto de Venta - Interfaz principal de ventas"
+    },
+    {
+      "src": "/screenshot-2.png", 
+      "sizes": "540x960",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Reportes - Dashboard de estadísticas"
+    },
+    {
+      "src": "/screenshot-wide-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Vista de escritorio - Panel completo"
+    }
   ],
   "related_applications": [],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "handle_links": "preferred",
+  "capture_links": "existing-client-navigate",
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "text/csv": [".csv"],
+        "application/json": [".json"]
+      }
+    }
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "permissions": [
+    "notifications",
+    "storage"
+  ]
 } 

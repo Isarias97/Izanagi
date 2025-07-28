@@ -1,0 +1,92 @@
+{
+  "generated": "2025-07-28T01:52:44.778Z",
+  "version": "2.0.0",
+  "icons": [
+    {
+      "size": 72,
+      "name": "icon-72.png"
+    },
+    {
+      "size": 96,
+      "name": "icon-96.png"
+    },
+    {
+      "size": 128,
+      "name": "icon-128.png"
+    },
+    {
+      "size": 144,
+      "name": "icon-144.png"
+    },
+    {
+      "size": 152,
+      "name": "icon-152.png"
+    },
+    {
+      "size": 192,
+      "name": "icon-192.png"
+    },
+    {
+      "size": 384,
+      "name": "icon-384.png"
+    },
+    {
+      "size": 512,
+      "name": "icon-512.png"
+    }
+  ],
+  "splashScreens": [
+    {
+      "width": 2048,
+      "height": 2732,
+      "name": "splash-2048x2732.png",
+      "device": "iPad Pro 12.9\" (portrait)"
+    },
+    {
+      "width": 1668,
+      "height": 2388,
+      "name": "splash-1668x2388.png",
+      "device": "iPad Pro 11\" (portrait)"
+    },
+    {
+      "width": 1536,
+      "height": 2048,
+      "name": "splash-1536x2048.png",
+      "device": "iPad 9.7\" (portrait)"
+    },
+    {
+      "width": 1125,
+      "height": 2436,
+      "name": "splash-1125x2436.png",
+      "device": "iPhone X/XS/11 Pro (portrait)"
+    },
+    {
+      "width": 1242,
+      "height": 2688,
+      "name": "splash-1242x2688.png",
+      "device": "iPhone XS Max/11 Pro Max (portrait)"
+    },
+    {
+      "width": 750,
+      "height": 1334,
+      "name": "splash-750x1334.png",
+      "device": "iPhone 6/7/8 (portrait)"
+    },
+    {
+      "width": 640,
+      "height": 1136,
+      "name": "splash-640x1136.png",
+      "device": "iPhone 5/SE (portrait)"
+    }
+  ],
+  "instructions": [
+    "1. Los archivos SVG se han generado en el directorio public/",
+    "2. Convierte los SVG a PNG usando una herramienta como:",
+    "   - https://convertio.co/svg-png/",
+    "   - https://cloudconvert.com/svg-to-png",
+    "   - O usa una librería como sharp en Node.js",
+    "3. Asegúrate de que todos los archivos PNG estén en public/",
+    "4. Verifica que el manifest.json incluya todos los iconos",
+    "5. Prueba la instalación PWA en diferentes dispositivos"
+  ]
+}
