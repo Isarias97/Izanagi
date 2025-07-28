@@ -2,8 +2,9 @@
 import React, { useState, useContext, useMemo, useCallback } from 'react';
 import { DataContext } from '../context';
 import { PayrollDetail, PayrollReport, TransactionLogEntry } from '../types';
-import { Card, CardHeader, CardContent, Button } from '../components/ui';
+import { Card, CardHeader, CardContent, Button, Icon } from '../components/ui';
 import Modal from '../components/Modal';
+import { generatePayrollPDF } from '../utils/pdfReports';
 
 // --- COMPONENTES INTERNOS ---
 const PayrollSummary: React.FC<{
@@ -32,10 +33,58 @@ const PayrollSummary: React.FC<{
 
 const PayrollHistory: React.FC<{
   payrollReports: PayrollReport[];
-}> = React.memo(({ payrollReports }) => (
-                    <Card>
-                        <CardHeader icon="fa-history">Historial de Nóminas</CardHeader>
-                        <CardContent className="max-h-[70vh] overflow-y-auto">
+}> = React.memo(({ payrollReports }) => {
+    const [currentWorker] = useState(() => {
+        const workerId = localStorage.getItem('currentWorkerId');
+        if (workerId) {
+            return 'Usuario';
+        }
+        return 'Usuario';
+    });
+
+    const handleDownloadReport = (report: PayrollReport) => {
+        generatePayrollPDF(report, {
+            title: 'Reporte de Nómina',
+            subtitle: 'Sistema Izanagi',
+            workerName: currentWorker
+        });
+    };
+
+    return (
+        <Card>
+            <CardHeader icon="fa-history">Historial de Nóminas</CardHeader>
+            <CardContent className="space-y-4">
+                {/* Botones de descarga */}
+                {payrollReports.length > 0 && (
+                    <div className="flex gap-2 mb-4">
+                        <Button
+                            variant="primary"
+                            icon="fa-download"
+                            onClick={() => {
+                                // Descargar el reporte más reciente
+                                const latestReport = payrollReports[payrollReports.length - 1];
+                                handleDownloadReport(latestReport);
+                            }}
+                            className="text-sm"
+                        >
+                            Última Nómina PDF
+                        </Button>
+                        <Button
+                            variant="success"
+                            icon="fa-file-pdf"
+                            onClick={() => {
+                                // Descargar todos los reportes (aquí podrías crear un reporte consolidado)
+                                const latestReport = payrollReports[payrollReports.length - 1];
+                                handleDownloadReport(latestReport);
+                            }}
+                            className="text-sm"
+                        >
+                            Reporte Completo
+                        </Button>
+                    </div>
+                )}
+                
+                <div className="max-h-[70vh] overflow-y-auto">
       {payrollReports.length === 0 ? (
                                 <div className="text-center p-8 text-gray-500">
                                     No se han procesado nóminas todavía.
@@ -75,9 +124,11 @@ const PayrollHistory: React.FC<{
                                     ))}
                                 </div>
                             )}
-                        </CardContent>
-                    </Card>
-));
+                        </div>
+                    </CardContent>
+                </Card>
+    );
+});
 
 const PayrollModal: React.FC<{
   isOpen: boolean;

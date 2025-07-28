@@ -4,6 +4,7 @@ import { DataContext } from '../context';
 import { Card, CardHeader, CardContent, InputGroup, Input, Button, Icon } from '../components/ui';
 import { TransactionType, AuditReport } from '../types';
 import { getPeriodDates, getTransactionTypeStyle, DiscrepancyDisplay } from '../utils';
+import ReportDownloadButtons from '../components/ReportDownloadButtons';
 
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, LineChart, Line } from 'recharts';
 
@@ -19,8 +20,50 @@ const SalesTab: React.FC<{
   endDate: string;
   setStartDate: (v: string) => void;
   setEndDate: (v: string) => void;
-}> = React.memo(({ filteredSalesReports, salesSummary, salesChartData, startDate, endDate, setStartDate, setEndDate }) => (
+  workerName?: string;
+}> = React.memo(({ filteredSalesReports, salesSummary, salesChartData, startDate, endDate, setStartDate, setEndDate, workerName }) => (
                     <div className="space-y-8">
+                        {/* Botones de descarga específicos para ventas */}
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-semibold">Reporte de Ventas</h3>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="primary"
+                              icon="fa-download"
+                              onClick={() => {
+                                const { generateSalesPDF } = require('../utils/pdfReports');
+                                generateSalesPDF(filteredSalesReports, {
+                                  title: 'Reporte de Ventas',
+                                  subtitle: 'Sistema Izanagi',
+                                  dateRange: startDate && endDate ? { start: startDate, end: endDate } : undefined,
+                                  includeDetails: false,
+                                  workerName
+                                });
+                              }}
+                              className="text-sm"
+                            >
+                              PDF Básico
+                            </Button>
+                            <Button
+                              variant="success"
+                              icon="fa-file-pdf"
+                              onClick={() => {
+                                const { generateSalesPDF } = require('../utils/pdfReports');
+                                generateSalesPDF(filteredSalesReports, {
+                                  title: 'Reporte Detallado de Ventas',
+                                  subtitle: 'Sistema Izanagi',
+                                  dateRange: startDate && endDate ? { start: startDate, end: endDate } : undefined,
+                                  includeDetails: true,
+                                  workerName
+                                });
+                              }}
+                              className="text-sm"
+                            >
+                              PDF Detallado
+                            </Button>
+                          </div>
+                        </div>
+                        
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-slate-900/50 rounded-lg items-end">
                             <InputGroup label="Fecha de inicio">
                                 <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
@@ -97,8 +140,48 @@ const ProfitsTab: React.FC<{
 
 const TransactionsTab: React.FC<{
   transactionLog: any[];
-}> = React.memo(({ transactionLog }) => (
+  workerName?: string;
+}> = React.memo(({ transactionLog, workerName }) => (
                     <div className="space-y-6">
+                        {/* Botones de descarga específicos para transacciones */}
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-semibold">Reporte de Transacciones</h3>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="primary"
+                              icon="fa-download"
+                              onClick={() => {
+                                const { generateTransactionsPDF } = require('../utils/pdfReports');
+                                generateTransactionsPDF(transactionLog, {
+                                  title: 'Reporte de Transacciones',
+                                  subtitle: 'Sistema Izanagi',
+                                  includeDetails: false,
+                                  workerName
+                                });
+                              }}
+                              className="text-sm"
+                            >
+                              PDF Básico
+                            </Button>
+                            <Button
+                              variant="success"
+                              icon="fa-file-pdf"
+                              onClick={() => {
+                                const { generateTransactionsPDF } = require('../utils/pdfReports');
+                                generateTransactionsPDF(transactionLog, {
+                                  title: 'Reporte Detallado de Transacciones',
+                                  subtitle: 'Sistema Izanagi',
+                                  includeDetails: true,
+                                  workerName
+                                });
+                              }}
+                              className="text-sm"
+                            >
+                              PDF Detallado
+                            </Button>
+                          </div>
+                        </div>
+                        
                          <div className="bg-slate-900/50 p-4 rounded-lg">
                             <h3 className="text-lg font-semibold">Historial de Transacciones</h3>
                             <p className="text-sm text-gray-400">Todos los movimientos de fondos de la aplicación.</p>
@@ -176,9 +259,49 @@ const CapitalTab: React.FC<{
                 
 const AuditTab: React.FC<{
   auditReports: AuditReport[];
-}> = React.memo(({ auditReports }) => (
+  workerName?: string;
+}> = React.memo(({ auditReports, workerName }) => (
                     <div className="space-y-6">
-                        <div className="bg-slate-900/50 p-4 rounded-lg">
+                        {/* Botones de descarga específicos para auditoría */}
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-semibold">Reporte de Auditoría</h3>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="primary"
+                              icon="fa-download"
+                              onClick={() => {
+                                const { generateAuditPDF } = require('../utils/pdfReports');
+                                generateAuditPDF(auditReports, {
+                                  title: 'Reporte de Auditoría',
+                                  subtitle: 'Sistema Izanagi',
+                                  includeDetails: false,
+                                  workerName
+                                });
+                              }}
+                              className="text-sm"
+                            >
+                              PDF Básico
+                            </Button>
+                            <Button
+                              variant="success"
+                              icon="fa-file-pdf"
+                              onClick={() => {
+                                const { generateAuditPDF } = require('../utils/pdfReports');
+                                generateAuditPDF(auditReports, {
+                                  title: 'Reporte Detallado de Auditoría',
+                                  subtitle: 'Sistema Izanagi',
+                                  includeDetails: true,
+                                  workerName
+                                });
+                              }}
+                              className="text-sm"
+                            >
+                              PDF Detallado
+                            </Button>
+                          </div>
+                        </div>
+                        
+                         <div className="bg-slate-900/50 p-4 rounded-lg">
                             <h3 className="text-lg font-semibold">Historial de Cierres de Caja</h3>
                             <p className="text-sm text-gray-400">Registro de todas las auditorías y discrepancias.</p>
                         </div>
@@ -215,6 +338,15 @@ const ReportsPage: React.FC = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [profitPeriod, setProfitPeriod] = useState<ProfitPeriod>('monthly');
+  const [currentWorker] = useState(() => {
+    // Obtener el trabajador actual del localStorage o contexto
+    const workerId = localStorage.getItem('currentWorkerId');
+    if (workerId) {
+      const worker = state.workers.find(w => w.id === parseInt(workerId));
+      return worker?.name || 'Usuario';
+    }
+    return 'Usuario';
+  });
 
   const filteredSalesReports = useMemo(() => {
     return state.reports.filter(report => {
@@ -304,6 +436,14 @@ const ReportsPage: React.FC = () => {
     <Card>
       <CardHeader icon="fa-chart-line">Reportes y Finanzas</CardHeader>
       <CardContent className="space-y-8">
+        {/* Botones de descarga de reportes */}
+        <ReportDownloadButtons
+          activeTab={activeTab}
+          filteredData={activeTab === 'sales' ? filteredSalesReports : undefined}
+          dateRange={startDate && endDate ? { start: startDate, end: endDate } : undefined}
+          workerName={currentWorker}
+        />
+        
         <div className="flex flex-wrap gap-2 mb-2 border-b border-slate-700 overflow-x-auto no-scrollbar">
           <button onClick={() => setActiveTab('sales')} className={`px-4 py-3 text-base font-semibold rounded-t-lg transition min-w-[120px] min-h-[44px] active:scale-95 touch-manipulation no-hover ${activeTab === 'sales' ? 'bg-accent text-white shadow-md' : 'bg-secondary text-gray-300'}`}>Ventas</button>
           <button onClick={() => setActiveTab('profits')} className={`px-4 py-3 text-base font-semibold rounded-t-lg transition min-w-[120px] min-h-[44px] active:scale-95 touch-manipulation no-hover ${activeTab === 'profits' ? 'bg-accent text-white shadow-md' : 'bg-secondary text-gray-300'}`}>Ganancias</button>
@@ -320,6 +460,7 @@ const ReportsPage: React.FC = () => {
             endDate={endDate}
             setStartDate={setStartDate}
             setEndDate={setEndDate}
+            workerName={currentWorker}
           />
         )}
         {activeTab === 'profits' && (
@@ -330,13 +471,13 @@ const ReportsPage: React.FC = () => {
           />
         )}
         {activeTab === 'transactions' && (
-          <TransactionsTab transactionLog={state.transactionLog} />
+          <TransactionsTab transactionLog={state.transactionLog} workerName={currentWorker} />
         )}
         {activeTab === 'capital' && (
           <CapitalTab capitalData={capitalData} investmentBalance={state.investmentBalance} />
         )}
         {activeTab === 'audit' && (
-          <AuditTab auditReports={state.auditReports} />
+          <AuditTab auditReports={state.auditReports} workerName={currentWorker} />
         )}
             </CardContent>
             <style>{`

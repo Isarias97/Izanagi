@@ -98,6 +98,46 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = 'Button';
 
+// Modal Component
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+  size?: 'sm' | 'md' | 'lg';
+}
+
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
+  if (!isOpen) return null;
+
+  const sizeClasses = {
+    sm: 'max-w-md',
+    md: 'max-w-2xl',
+    lg: 'max-w-4xl'
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className={`relative bg-dark-card border border-slate-700/50 rounded-2xl shadow-3d-card w-full ${sizeClasses[size]} max-h-[90vh] overflow-hidden`}>
+        <div className="flex items-center justify-between p-4 border-b border-slate-700/50">
+          <h3 className="text-lg font-semibold text-white">{title}</h3>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
+            aria-label="Cerrar modal"
+          >
+            <Icon name="fa-times" className="text-gray-400" />
+          </button>
+        </div>
+        <div className="p-4 max-h-[calc(90vh-120px)] overflow-y-auto">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Estilos globales para feedback táctil y no-hover
 if (typeof window !== 'undefined') {
   const style = document.createElement('style');

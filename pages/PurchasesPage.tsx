@@ -4,6 +4,7 @@ import { DataContext } from '../context';
 import { Product, TransactionLogEntry, Category } from '../types';
 import { Card, CardHeader, CardContent, InputGroup, Input, Button, Icon, Select } from '../components/ui';
 import { DEFAULT_ICON } from '../constants';
+import { generatePurchasesPDF } from '../utils/pdfReports';
 
 interface PurchaseCartItem {
     id: number;
@@ -213,38 +214,82 @@ const PurchaseSummary: React.FC<{
 const PurchaseHistory: React.FC<{
     purchases: any[];
     categories: Category[];
-}> = React.memo(({ purchases, categories }) => (
-    <Card>
-        <CardHeader icon="fa-history">Historial de Compras</CardHeader>
-        <CardContent className="max-h-[80vh] overflow-y-auto">
-            {purchases.length === 0 ? (
-                <div className="text-center p-8 text-gray-500">No hay compras registradas.</div>
-            ) : (
-                <div className="space-y-4">
-                    {[...purchases].reverse().map(p => (
-                        <div key={p.id} className="bg-slate-800/60 rounded-lg p-4 active:scale-95 touch-manipulation no-hover">
-                            <div className="flex justify-between items-center border-b border-slate-700 pb-2 mb-2">
-                                <h4 className="font-bold">Compra #{p.id}</h4>
-                                <span className="text-sm text-gray-400">{new Date(p.date).toLocaleString()}</span>
-                            </div>
-                            <ul className="text-sm space-y-1 mb-2">
-                                {p.items.map((i: any) => (
-                                    <li key={`${p.id}-${i.productId}`} className="flex justify-between">
-                                        <span>{i.quantity} x {i.name}</span>
-                                        <span className="text-gray-400">${i.costPrice.toFixed(2)} c/u</span>
-                                    </li>
-                                ))}
-                            </ul>
-                            <div className="text-right font-bold text-accent border-t border-slate-700 pt-2 mt-2">
-                                Total: ${p.totalCost.toFixed(2)}
-                            </div>
+}> = React.memo(({ purchases, categories }) => {
+    const [currentWorker] = useState(() => {
+        const workerId = localStorage.getItem('currentWorkerId');
+        if (workerId) {
+            // Aquí necesitarías acceder al contexto para obtener el nombre del trabajador
+            return 'Usuario';
+        }
+        return 'Usuario';
+    });
+
+    const handleDownloadReport = (includeDetails: boolean = false) => {
+        generatePurchasesPDF(purchases, {
+            title: includeDetails ? 'Reporte Detallado de Compras' : 'Reporte de Compras',
+            subtitle: 'Sistema Izanagi',
+            includeDetails,
+            workerName: currentWorker
+        });
+    };
+
+    return (
+        <Card>
+            <CardHeader icon="fa-history">Historial de Compras</CardHeader>
+            <CardContent className="space-y-4">
+                {/* Botones de descarga */}
+                {purchases.length > 0 && (
+                    <div className="flex gap-2 mb-4">
+                        <Button
+                            variant="primary"
+                            icon="fa-download"
+                            onClick={() => handleDownloadReport(false)}
+                            className="text-sm"
+                        >
+                            PDF Básico
+                        </Button>
+                        <Button
+                            variant="success"
+                            icon="fa-file-pdf"
+                            onClick={() => handleDownloadReport(true)}
+                            className="text-sm"
+                        >
+                            PDF Detallado
+                        </Button>
+                    </div>
+                )}
+                
+                <div className="max-h-[80vh] overflow-y-auto">
+                    {purchases.length === 0 ? (
+                        <div className="text-center p-8 text-gray-500">No hay compras registradas.</div>
+                    ) : (
+                        <div className="space-y-4">
+                            {[...purchases].reverse().map(p => (
+                                <div key={p.id} className="bg-slate-800/60 rounded-lg p-4 active:scale-95 touch-manipulation no-hover">
+                                    <div className="flex justify-between items-center border-b border-slate-700 pb-2 mb-2">
+                                        <h4 className="font-bold">Compra #{p.id}</h4>
+                                        <span className="text-sm text-gray-400">{new Date(p.date).toLocaleString()}</span>
+                                    </div>
+                                    <ul className="text-sm space-y-1 mb-2">
+                                        {p.items.map((i: any) => (
+                                            <li key={`${p.id}-${i.productId}`} className="flex justify-between">
+                                                <span>{i.quantity} x {i.name}</span>
+                                                <span className="text-gray-400">${i.costPrice.toFixed(2)} c/u</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <div className="text-right font-bold text-accent border-t border-slate-700 pt-2 mt-2">
+                                        Total: ${p.totalCost.toFixed(2)}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                    )}
                 </div>
-            )}
-        </CardContent>
-    </Card>
-));
+            </CardContent>
+        </Card>
+    );
+});
 
 // --- MAIN PAGE ---
 const PurchasesPage: React.FC = () => {
