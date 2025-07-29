@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generador de Iconos Izanagi</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .icon-preview { margin: 10px; display: inline-block; text-align: center; }
+        canvas { border: 1px solid #ccc; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Generador de Iconos para Sistema Izanagi</h1>
+    <p>Haz clic en cada icono para descargarlo:</p>
+    <div id="icons"></div>
+
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        const iconsContainer = document.getElementById('icons');
+
+        function generateIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Fondo degradado azul cubano
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#002A8F');
+            gradient.addColorStop(1, '#CF142B');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+
+            // Borde redondeado
+            ctx.globalCompositeOperation = 'destination-in';
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, size * 0.1);
+            ctx.fill();
+
+            // Reset composite operation
+            ctx.globalCompositeOperation = 'source-over';
+
+            // Texto "IZ"
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size * 0.4}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('IZ', size / 2, size / 2);
+
+            // Sombra sutil
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = size * 0.05;
+            ctx.shadowOffsetX = size * 0.02;
+            ctx.shadowOffsetY = size * 0.02;
+
+            return canvas;
+        }
+
+        function downloadIcon(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Generar todos los iconos
+        sizes.forEach(size => {
+            const canvas = generateIcon(size);
+            const filename = `icon-${size}.png`;
+            
+            const div = document.createElement('div');
+            div.className = 'icon-preview';
+            div.innerHTML = `
+                <canvas width="${size}" height="${size}"></canvas>
+                <br>
+                <button onclick="downloadIcon(this.previousElementSibling, '${filename}')">
+                    Descargar ${filename}
+                </button>
+            `;
+            
+            // Copiar el contenido del canvas generado
+            const ctx = div.querySelector('canvas').getContext('2d');
+            ctx.drawImage(canvas, 0, 0);
+            
+            iconsContainer.appendChild(div);
+        });
+
+        // Función para crear bordes redondeados en canvas
+        CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+            this.beginPath();
+            this.moveTo(x + radius, y);
+            this.lineTo(x + width - radius, y);
+            this.quadraticCurveTo(x + width, y, x + width, y + radius);
+            this.lineTo(x + width, y + height - radius);
+            this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            this.lineTo(x + radius, y + height);
+            this.quadraticCurveTo(x, y + height, x, y + height - radius);
+            this.lineTo(x, y + radius);
+            this.quadraticCurveTo(x, y, x + radius, y);
+            this.closePath();
+        };
+    </script>
+</body>
+</html> 
