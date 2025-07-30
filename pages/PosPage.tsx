@@ -2,8 +2,9 @@
 import React, { useState, useContext, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataContext } from '../context';
-import { SaleItem, Product, Page, TransactionLogEntry, AuditReport, SaleReport } from '../types';
+import { SaleItem, Product, TransactionLogEntry, AuditReport, SaleReport } from '../types';
 import { Card, CardHeader, CardContent, InputGroup, Input, Button, Select, Icon } from '../components/ui';
+import Modal from '../components/Modal';
 import { DEFAULT_ICON } from '../constants';
 
 const getChangeDisplay = (amountPaidStr: string, change: number) => {
@@ -32,7 +33,7 @@ const ProductSearchSection: React.FC<{
   setSearchTerm: (v: string) => void;
   searchResults: Product[];
   onSelect: (p: Product) => void;
-  searchInputRef: React.RefObject<HTMLInputElement>;
+  searchInputRef: React.RefObject<HTMLInputElement | null>;
   categories: any[];
 }> = ({ searchTerm, setSearchTerm, searchResults, onSelect, searchInputRef, categories }) => (
   <InputGroup label="Buscar por Nombre o SKU" className="relative">
@@ -93,7 +94,7 @@ const PaymentSummarySection: React.FC<{
   setCurrentSale: React.Dispatch<React.SetStateAction<any>>;
   changeDisplay: { text: string; className: string };
   processSale: () => void;
-  paymentInputRef: React.RefObject<HTMLInputElement>;
+  paymentInputRef: React.RefObject<HTMLInputElement | null>;
 }> = ({ saleTotals, currentSale, setCurrentSale, changeDisplay, processSale, paymentInputRef }) => (
   <>
     <div className="flex-grow space-y-4">
@@ -222,6 +223,14 @@ const PosPage: React.FC = () => {
   const [countedUSD, setCountedUSD] = useState('');
   const [selectedDebtor, setSelectedDebtor] = useState<any>(null);
   const [debtorSearchTerm, setDebtorSearchTerm] = useState('');
+  const [debtsTab, setDebtsTab] = useState<'sale' | 'debtors' | 'debts' | 'payments'>('sale');
+  const [isAddDebtorModalOpen, setIsAddDebtorModalOpen] = useState(false);
+  const [isAddDebtModalOpen, setIsAddDebtModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [editingDebtor, setEditingDebtor] = useState<any>(null);
+  const [editingDebt, setEditingDebt] = useState<any>(null);
+  const [selectedDebt, setSelectedDebt] = useState<any>(null);
+  const [debtsSearchTerm, setDebtsSearchTerm] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const quantityInputRef = useRef<HTMLInputElement>(null);
   const paymentInputRef = useRef<HTMLInputElement>(null);
@@ -482,6 +491,134 @@ const PosPage: React.FC = () => {
     setCountedUSD('');
   }, [currentUser, dailyAuditData, cashCount, setState, showNotification]);
 
+  // Cálculos para deudas
+  const totalDebt = useMemo(() => 
+    state.debts.reduce((sum, debt) => sum + debt.amount, 0), [state.debts]
+  );
+
+  const overdueDebts = useMemo(() => 
+    state.debts.filter(debt => 
+      debt.status === 'PENDING' && new Date(debt.dueDate) < new Date()
+    ), [state.debts]
+  );
+
+  const totalOverdue = useMemo(() => 
+    overdueDebts.reduce((sum, debt) => sum + debt.amount, 0), [overdueDebts]
+  );
+
+  const filteredDebtors = useMemo(() => 
+    state.debtors.filter(debtor => 
+      debtor.name.toLowerCase().includes(debtsSearchTerm.toLowerCase()) ||
+      debtor.phone.includes(debtsSearchTerm)
+    ), [state.debtors, debtsSearchTerm]
+  );
+
+  const filteredDebts = useMemo(() => 
+    state.debts.filter(debt => 
+      debt.debtorName.toLowerCase().includes(debtsSearchTerm.toLowerCase()) ||
+      debt.description.toLowerCase().includes(debtsSearchTerm.toLowerCase())
+    ), [state.debts, debtsSearchTerm]
+  );
+
+  // Handlers para gestión de deudas
+  const handleAddDebtor = useCallback((data: any) => {
+    const newDebtor = {
+      ...data,
+      id: Date.now(),
+      totalDebt: 0,
+      createdAt: new Date().toISOString(),
+    };
+    setState(prev => ({
+      ...prev,
+      debtors: [...prev.debtors, newDebtor]
+    }));
+    setIsAddDebtorModalOpen(false);
+    showNotification('Éxito', 'Deudor agregado correctamente.');
+  }, [setState, showNotification]);
+
+  const handleAddDebt = useCallback((data: any) => {
+    const newDebt = {
+      ...data,
+      id: Date.now(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    // Actualizar total de deuda del deudor
+    const updatedDebtors = state.debtors.map(debtor => 
+      debtor.id === data.debtorId 
+        ? { ...debtor, totalDebt: debtor.totalDebt + data.amount }
+        : debtor
+    );
+
+    setState(prev => ({
+      ...prev,
+      debts: [...prev.debts, newDebt],
+      debtors: updatedDebtors
+    }));
+    setIsAddDebtModalOpen(false);
+    showNotification('Éxito', 'Deuda registrada correctamente.');
+  }, [setState, showNotification, state.debtors]);
+
+  const handleAddPayment = useCallback((data: any) => {
+    const newPayment = {
+      ...data,
+      id: Date.now(),
+    };
+
+    // Actualizar deuda
+    const updatedDebts = state.debts.map(debt => {
+      if (debt.id === data.debtId) {
+        const newAmount = debt.amount - data.amount;
+        const newStatus = newAmount <= 0 ? 'PAID' as const : 'PARTIAL' as const;
+        return {
+          ...debt,
+          amount: newAmount,
+          status: newStatus,
+          updatedAt: new Date().toISOString(),
+        };
+      }
+      return debt;
+    });
+
+    // Actualizar total de deuda del deudor
+    const debt = state.debts.find(d => d.id === data.debtId);
+    const updatedDebtors = state.debtors.map(debtor => 
+      debtor.id === debt?.debtorId 
+        ? { ...debtor, totalDebt: Math.max(0, debtor.totalDebt - data.amount) }
+        : debtor
+    );
+
+    setState(prev => ({
+      ...prev,
+      debtPayments: [...prev.debtPayments, newPayment],
+      debts: updatedDebts,
+      debtors: updatedDebtors
+    }));
+    setIsPaymentModalOpen(false);
+    showNotification('Éxito', 'Pago registrado correctamente.');
+  }, [setState, showNotification, state.debts, state.debtors]);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PAID': return 'text-success';
+      case 'PARTIAL': return 'text-warning';
+      case 'OVERDUE': return 'text-danger';
+      case 'CANCELLED': return 'text-gray-400';
+      default: return 'text-accent';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'PAID': return 'Pagada';
+      case 'PARTIAL': return 'Parcial';
+      case 'OVERDUE': return 'Vencida';
+      case 'CANCELLED': return 'Cancelada';
+      default: return 'Pendiente';
+    }
+  };
+
   useEffect(() => {
     const handlePosKeys = (e: KeyboardEvent) => {
         if(document.activeElement?.closest('.modal-content') || activeTab !== 'sale') return;
@@ -583,184 +720,487 @@ const PosPage: React.FC = () => {
             </div>
         )}
         {activeTab === 'debts' && (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-            <div className="lg:col-span-3 order-2 lg:order-1">
-              <Card className="p-2 sm:p-4">
-                <CardHeader icon="fa-search">Venta a Crédito</CardHeader>
-                <CardContent>
-                  <div className="text-center text-xs text-gray-400 mb-4">Atajos: [Enter] Agregar | [F9] Pagar | [F12] Finalizar</div>
-                  
-                  {/* Selección de Deudor */}
-                  <div className="mb-6">
-                    <h4 className="flex items-center gap-3 text-lg font-semibold mb-3">
-                      <Icon name="fa-user"/> Seleccionar Deudor
-                    </h4>
-                    <InputGroup label="Buscar Deudor" className="relative">
-                      <Input 
-                        type="text" 
-                        placeholder="Buscar por nombre o teléfono..." 
-                        value={debtorSearchTerm} 
-                        onChange={e => setDebtorSearchTerm(e.target.value)} 
-                        autoComplete="off" 
-                        className="text-lg" 
-                      />
-                      {debtorSearchResults.length > 0 && debtorSearchTerm.length > 0 && (
-                        <div className="absolute w-full top-full mt-1 bg-slate-800 border border-slate-700 rounded-lg max-h-60 overflow-y-auto z-30 shadow-lg">
-                          {debtorSearchResults.map(debtor => (
-                            <div 
-                              key={debtor.id} 
+          <div className="space-y-6">
+            {/* Header con estadísticas */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="text-center p-4">
+                  <div className="text-2xl font-bold text-accent">{state.debtors.length}</div>
+                  <div className="text-sm text-gray-400">Deudores Activos</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="text-center p-4">
+                  <div className="text-2xl font-bold text-warning">{totalDebt.toFixed(2)} CUP</div>
+                  <div className="text-sm text-gray-400">Deuda Total</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="text-center p-4">
+                  <div className="text-2xl font-bold text-danger">{totalOverdue.toFixed(2)} CUP</div>
+                  <div className="text-sm text-gray-400">Deudas Vencidas</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="text-center p-4">
+                  <div className="text-2xl font-bold text-success">{state.debtPayments.length}</div>
+                  <div className="text-sm text-gray-400">Pagos Registrados</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Sub-pestañas */}
+            <div className="flex flex-wrap gap-2 border-b border-slate-700">
+              <button
+                onClick={() => setDebtsTab('sale')}
+                className={`px-4 py-2 rounded-t-lg text-sm font-medium transition ${
+                  debtsTab === 'sale' 
+                    ? 'bg-accent text-white' 
+                    : 'bg-slate-800 text-gray-300 hover:bg-slate-700'
+                }`}
+              >
+                <Icon name="fa-shopping-cart" className="mr-2" />
+                Nueva Venta
+              </button>
+              <button
+                onClick={() => setDebtsTab('debtors')}
+                className={`px-4 py-2 rounded-t-lg text-sm font-medium transition ${
+                  debtsTab === 'debtors' 
+                    ? 'bg-accent text-white' 
+                    : 'bg-slate-800 text-gray-300 hover:bg-slate-700'
+                }`}
+              >
+                <Icon name="fa-users" className="mr-2" />
+                Deudores
+              </button>
+              <button
+                onClick={() => setDebtsTab('debts')}
+                className={`px-4 py-2 rounded-t-lg text-sm font-medium transition ${
+                  debtsTab === 'debts' 
+                    ? 'bg-accent text-white' 
+                    : 'bg-slate-800 text-gray-300 hover:bg-slate-700'
+                }`}
+              >
+                <Icon name="fa-credit-card" className="mr-2" />
+                Deudas
+              </button>
+              <button
+                onClick={() => setDebtsTab('payments')}
+                className={`px-4 py-2 rounded-t-lg text-sm font-medium transition ${
+                  debtsTab === 'payments' 
+                    ? 'bg-accent text-white' 
+                    : 'bg-slate-800 text-gray-300 hover:bg-slate-700'
+                }`}
+              >
+                <Icon name="fa-money-bill" className="mr-2" />
+                Pagos
+              </button>
+            </div>
+
+            {/* Contenido de las sub-pestañas */}
+            {debtsTab === 'sale' && (
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+                <div className="lg:col-span-3 order-2 lg:order-1">
+                  <Card className="p-2 sm:p-4">
+                    <CardHeader icon="fa-search">Venta a Crédito</CardHeader>
+                    <CardContent>
+                      <div className="text-center text-xs text-gray-400 mb-4">Atajos: [Enter] Agregar | [F9] Pagar | [F12] Finalizar</div>
+                      
+                      {/* Selección de Deudor */}
+                      <div className="mb-6">
+                        <h4 className="flex items-center gap-3 text-lg font-semibold mb-3">
+                          <Icon name="fa-user"/> Seleccionar Deudor
+                        </h4>
+                        <InputGroup label="Buscar Deudor" className="relative">
+                          <Input 
+                            type="text" 
+                            placeholder="Buscar por nombre o teléfono..." 
+                            value={debtorSearchTerm} 
+                            onChange={e => setDebtorSearchTerm(e.target.value)} 
+                            autoComplete="off" 
+                            className="text-lg" 
+                          />
+                          {debtorSearchResults.length > 0 && debtorSearchTerm.length > 0 && (
+                            <div className="absolute w-full top-full mt-1 bg-slate-800 border border-slate-700 rounded-lg max-h-60 overflow-y-auto z-30 shadow-lg">
+                              {debtorSearchResults.map(debtor => (
+                                <div 
+                                  key={debtor.id} 
+                                  onClick={() => {
+                                    setSelectedDebtor(debtor);
+                                    setCurrentSale(prev => ({ ...prev, debtorId: debtor.id, isDebt: true }));
+                                    setDebtorSearchTerm('');
+                                  }} 
+                                  className="suggestion-item p-3 hover:bg-accent cursor-pointer border-b border-slate-700 flex items-center gap-3"
+                                >
+                                  <span className="text-xl">👤</span>
+                                  <div>
+                                    <span className="font-semibold">{debtor.name}</span>
+                                    <div className="text-sm text-gray-400">{debtor.phone}</div>
+                                    <div className="text-xs text-gray-500">Deuda actual: ${debtor.totalDebt.toFixed(2)}</div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </InputGroup>
+                        
+                        {selectedDebtor && (
+                          <div className="mt-4 p-4 bg-slate-900/50 rounded-lg border border-accent relative animate-fade-in">
+                            <button 
                               onClick={() => {
-                                setSelectedDebtor(debtor);
-                                setCurrentSale(prev => ({ ...prev, debtorId: debtor.id, isDebt: true }));
-                                setDebtorSearchTerm('');
+                                setSelectedDebtor(null);
+                                setCurrentSale(prev => ({ ...prev, debtorId: undefined, isDebt: false }));
                               }} 
-                              className="suggestion-item p-3 hover:bg-accent cursor-pointer border-b border-slate-700 flex items-center gap-3"
+                              className="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl leading-none z-10" 
+                              aria-label="Cancelar selección"
                             >
-                              <span className="text-xl">👤</span>
+                              &times;
+                            </button>
+                            <div className="flex items-center gap-4">
+                              <span className="text-3xl">👤</span>
                               <div>
-                                <span className="font-semibold">{debtor.name}</span>
-                                <div className="text-sm text-gray-400">{debtor.phone}</div>
-                                <div className="text-xs text-gray-500">Deuda actual: ${debtor.totalDebt.toFixed(2)}</div>
+                                <p className="font-bold text-lg">{selectedDebtor.name}</p>
+                                <p className="text-sm text-gray-400">{selectedDebtor.phone}</p>
+                                <p className="text-sm text-warning">Deuda actual: ${selectedDebtor.totalDebt.toFixed(2)}</p>
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      )}
-                    </InputGroup>
-                    
-                    {selectedDebtor && (
-                      <div className="mt-4 p-4 bg-slate-900/50 rounded-lg border border-accent relative animate-fade-in">
-                        <button 
-                          onClick={() => {
-                            setSelectedDebtor(null);
-                            setCurrentSale(prev => ({ ...prev, debtorId: undefined, isDebt: false }));
-                          }} 
-                          className="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl leading-none z-10" 
-                          aria-label="Cancelar selección"
-                        >
-                          &times;
-                        </button>
-                        <div className="flex items-center gap-4">
-                          <span className="text-3xl">👤</span>
-                          <div>
-                            <p className="font-bold text-lg">{selectedDebtor.name}</p>
-                            <p className="text-sm text-gray-400">{selectedDebtor.phone}</p>
-                            <p className="text-sm text-warning">Deuda actual: ${selectedDebtor.totalDebt.toFixed(2)}</p>
                           </div>
-                        </div>
+                        )}
                       </div>
-                    )}
-                  </div>
 
-                  <div className="min-h-[140px]">
-                    {currentSale.selectedProduct ? (
-                      <div className="bg-slate-900/50 p-4 rounded-lg border border-accent relative animate-fade-in">
-                        <button onClick={handleCancelSelection} className="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl leading-none z-10" aria-label="Cancelar selección">&times;</button>
-                        <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
-                          <span className="text-4xl">{state.categories.find(c => c.id === currentSale.selectedProduct!.categoryId)?.icon || DEFAULT_ICON}</span>
-                          <div className="text-center sm:text-left">
-                            <p className="font-bold text-lg">{currentSale.selectedProduct.name}</p>
-                            <p className="text-sm text-gray-400">Precio: ${currentSale.selectedProduct.price.toFixed(2)} | Stock: {currentSale.selectedProduct.stock}</p>
+                      <div className="min-h-[140px]">
+                        {currentSale.selectedProduct ? (
+                          <div className="bg-slate-900/50 p-4 rounded-lg border border-accent relative animate-fade-in">
+                            <button onClick={handleCancelSelection} className="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl leading-none z-10" aria-label="Cancelar selección">&times;</button>
+                            <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
+                              <span className="text-4xl">{state.categories.find(c => c.id === currentSale.selectedProduct!.categoryId)?.icon || DEFAULT_ICON}</span>
+                              <div className="text-center sm:text-left">
+                                <p className="font-bold text-lg">{currentSale.selectedProduct.name}</p>
+                                <p className="text-sm text-gray-400">Precio: ${currentSale.selectedProduct.price.toFixed(2)} | Stock: {currentSale.selectedProduct.stock}</p>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 gap-4 items-end sm:grid-cols-[1fr_auto]">
+                              <InputGroup label="Cantidad">
+                                <Input ref={quantityInputRef} type="number" min="1" value={quantity} onChange={e => setQuantity(e.target.value)} className="w-full text-center text-lg" />
+                              </InputGroup>
+                              <Button icon="fa-plus" onClick={handleAddToSale} className="w-full sm:w-auto text-lg py-3">Agregar al Carrito</Button>
+                            </div>
                           </div>
+                        ) : (
+                          <ProductSearchSection
+                            searchTerm={searchTerm}
+                            setSearchTerm={setSearchTerm}
+                            searchResults={searchResults}
+                            onSelect={handleSelectProduct}
+                            searchInputRef={searchInputRef}
+                            categories={state.categories}
+                          />
+                        )}
+                      </div>
+                      
+                      <div className="mt-6">
+                        <h4 className="flex items-center gap-3 text-lg font-semibold mb-3">
+                          <Icon name="fa-shopping-cart"/> Carrito de Compra
+                        </h4>
+                        <CartSection
+                          items={currentSale.items}
+                          categories={state.categories}
+                          onRemove={handleRemoveFromSale}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div className="lg:col-span-2 order-1 lg:order-2">
+                  <Card className="p-2 sm:p-4">
+                    <CardHeader icon="fa-credit-card">Resumen y Pago Parcial</CardHeader>
+                    <CardContent className="flex flex-col h-full">
+                      {currentSale.items.length === 0 ? (
+                        <div className="flex-grow flex flex-col items-center justify-center text-center text-gray-500 p-4">
+                          <Icon name="fa-shopping-cart" className="text-5xl mb-4 text-slate-600" />
+                          <p className="text-lg font-semibold">El carrito está vacío</p>
+                          <p className="text-gray-400">Agregue productos para ver el resumen.</p>
                         </div>
-                        <div className="grid grid-cols-1 gap-4 items-end sm:grid-cols-[1fr_auto]">
-                          <InputGroup label="Cantidad">
-                            <Input ref={quantityInputRef} type="number" min="1" value={quantity} onChange={e => setQuantity(e.target.value)} className="w-full text-center text-lg" />
+                      ) : (
+                        <div className="flex-grow space-y-4">
+                          <div className="text-right border-b border-slate-700 pb-4 mb-4">
+                            <span className="text-gray-400">Total a Pagar</span>
+                            <div className="text-3xl font-bold">${saleTotals.total.toFixed(2)} CUP</div>
+                          </div>
+                          
+                          {/* Fecha límite opcional */}
+                          <InputGroup label="Fecha Límite (Opcional)">
+                            <Input 
+                              type="date" 
+                              value={currentSale.dueDate || ''} 
+                              onChange={e => setCurrentSale(prev => ({ ...prev, dueDate: e.target.value }))}
+                              min={new Date().toISOString().split('T')[0]}
+                            />
                           </InputGroup>
-                          <Button icon="fa-plus" onClick={handleAddToSale} className="w-full sm:w-auto text-lg py-3">Agregar al Carrito</Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <ProductSearchSection
-                        searchTerm={searchTerm}
-                        setSearchTerm={setSearchTerm}
-                        searchResults={searchResults}
-                        onSelect={handleSelectProduct}
-                        searchInputRef={searchInputRef}
-                        categories={state.categories}
-                      />
-                    )}
-                  </div>
-                  
-                  <div className="mt-6">
-                    <h4 className="flex items-center gap-3 text-lg font-semibold mb-3">
-                      <Icon name="fa-shopping-cart"/> Carrito de Compra
-                    </h4>
-                    <CartSection
-                      items={currentSale.items}
-                      categories={state.categories}
-                      onRemove={handleRemoveFromSale}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div className="lg:col-span-2 order-1 lg:order-2">
-              <Card className="p-2 sm:p-4">
-                <CardHeader icon="fa-credit-card">Resumen y Pago Parcial</CardHeader>
-                <CardContent className="flex flex-col h-full">
-                  {currentSale.items.length === 0 ? (
-                    <div className="flex-grow flex flex-col items-center justify-center text-center text-gray-500 p-4">
-                      <Icon name="fa-shopping-cart" className="text-5xl mb-4 text-slate-600" />
-                      <p className="text-lg font-semibold">El carrito está vacío</p>
-                      <p className="text-gray-400">Agregue productos para ver el resumen.</p>
-                    </div>
-                  ) : (
-                    <div className="flex-grow space-y-4">
-                      <div className="text-right border-b border-slate-700 pb-4 mb-4">
-                        <span className="text-gray-400">Total a Pagar</span>
-                        <div className="text-3xl font-bold">${saleTotals.total.toFixed(2)} CUP</div>
-                      </div>
-                      
-                      {/* Fecha límite opcional */}
-                      <InputGroup label="Fecha Límite (Opcional)">
-                        <Input 
-                          type="date" 
-                          value={currentSale.dueDate || ''} 
-                          onChange={e => setCurrentSale(prev => ({ ...prev, dueDate: e.target.value }))}
-                          min={new Date().toISOString().split('T')[0]}
-                        />
-                      </InputGroup>
-                      
-                      {/* Pago parcial */}
-                      <InputGroup label="Pago Inicial (Opcional)">
-                        <Input 
-                          ref={paymentInputRef}
-                          type="number" 
-                          placeholder="0.00" 
-                          value={currentSale.amountPaid} 
-                          onChange={e => setCurrentSale(prev => ({ ...prev, amountPaid: e.target.value }))}
-                          className="text-lg text-center"
-                        />
-                      </InputGroup>
-                      
-                      {currentSale.amountPaid && parseFloat(currentSale.amountPaid) > 0 && (
-                        <div className="bg-slate-900/50 p-4 rounded-lg">
-                          <div className="text-center">
-                            <span className="text-gray-400">Pago Inicial</span>
-                            <div className="text-2xl font-bold text-success">${parseFloat(currentSale.amountPaid).toFixed(2)} CUP</div>
-                            <span className="text-gray-400">Deuda Restante</span>
-                            <div className="text-xl font-bold text-warning">${(saleTotals.total - parseFloat(currentSale.amountPaid)).toFixed(2)} CUP</div>
-                          </div>
+                          
+                          {/* Pago parcial */}
+                          <InputGroup label="Pago Inicial (Opcional)">
+                            <Input 
+                              ref={paymentInputRef}
+                              type="number" 
+                              placeholder="0.00" 
+                              value={currentSale.amountPaid} 
+                              onChange={e => setCurrentSale(prev => ({ ...prev, amountPaid: e.target.value }))}
+                              className="text-lg text-center"
+                            />
+                          </InputGroup>
+                          
+                          {currentSale.amountPaid && parseFloat(currentSale.amountPaid) > 0 && (
+                            <div className="bg-slate-900/50 p-4 rounded-lg">
+                              <div className="text-center">
+                                <span className="text-gray-400">Pago Inicial</span>
+                                <div className="text-2xl font-bold text-success">${parseFloat(currentSale.amountPaid).toFixed(2)} CUP</div>
+                                <span className="text-gray-400">Deuda Restante</span>
+                                <div className="text-xl font-bold text-warning">${(saleTotals.total - parseFloat(currentSale.amountPaid)).toFixed(2)} CUP</div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="flex-grow"></div>
+                          
+                          <Button 
+                            icon="fa-check-circle" 
+                            onClick={processSale} 
+                            className="w-full text-lg py-4"
+                            disabled={!selectedDebtor}
+                          >
+                            {currentSale.amountPaid && parseFloat(currentSale.amountPaid) > 0 ? 'Crear Venta con Pago Parcial' : 'Crear Deuda Completa'}
+                          </Button>
                         </div>
                       )}
-                      
-                      <div className="flex-grow"></div>
-                      
-                      <Button 
-                        icon="fa-check-circle" 
-                        onClick={processSale} 
-                        className="w-full text-lg py-4"
-                        disabled={!selectedDebtor}
-                      >
-                        {currentSale.amountPaid && parseFloat(currentSale.amountPaid) > 0 ? 'Crear Venta con Pago Parcial' : 'Crear Deuda Completa'}
-                      </Button>
-                    </div>
-                  )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {debtsTab === 'debtors' && (
+              <Card>
+                <CardHeader icon="fa-users">
+                  <div className="flex justify-between items-center">
+                    <span>Gestión de Deudores</span>
+                    <Button 
+                      icon="fa-plus" 
+                      onClick={() => setIsAddDebtorModalOpen(true)}
+                      className="text-sm"
+                    >
+                      Agregar Deudor
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <InputGroup label="Buscar Deudores">
+                    <Input 
+                      type="text" 
+                      placeholder="Buscar por nombre o teléfono..." 
+                      value={debtsSearchTerm} 
+                      onChange={e => setDebtsSearchTerm(e.target.value)} 
+                    />
+                  </InputGroup>
+                  
+                  <div className="overflow-x-auto mt-4">
+                    <table className="w-full text-sm text-left">
+                      <thead className="text-xs uppercase bg-slate-800">
+                        <tr>
+                          <th className="px-4 py-3">Nombre</th>
+                          <th className="px-4 py-3">Teléfono</th>
+                          <th className="px-4 py-3">Email</th>
+                          <th className="px-4 py-3">Deuda Total</th>
+                          <th className="px-4 py-3">Estado</th>
+                          <th className="px-4 py-3">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-700">
+                        {filteredDebtors.map(debtor => (
+                          <tr key={debtor.id} className="hover:bg-slate-800/50">
+                            <td className="px-4 py-3 font-medium">{debtor.name}</td>
+                            <td className="px-4 py-3">{debtor.phone}</td>
+                            <td className="px-4 py-3">{debtor.email || '-'}</td>
+                            <td className="px-4 py-3">
+                              <span className={debtor.totalDebt > 0 ? 'text-warning font-semibold' : 'text-success'}>
+                                ${debtor.totalDebt.toFixed(2)}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                debtor.totalDebt > 0 ? 'bg-warning/20 text-warning' : 'bg-success/20 text-success'
+                              }`}>
+                                {debtor.totalDebt > 0 ? 'Con Deuda' : 'Sin Deuda'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex gap-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="secondary"
+                                  onClick={() => {
+                                    setEditingDebtor(debtor);
+                                    setIsAddDebtorModalOpen(true);
+                                  }}
+                                >
+                                  <Icon name="fa-edit" />
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="primary"
+                                  onClick={() => {
+                                    setSelectedDebtor(debtor);
+                                    setDebtsTab('sale');
+                                  }}
+                                >
+                                  <Icon name="fa-shopping-cart" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </CardContent>
               </Card>
-            </div>
+            )}
+
+            {debtsTab === 'debts' && (
+              <Card>
+                <CardHeader icon="fa-credit-card">
+                  <div className="flex justify-between items-center">
+                    <span>Gestión de Deudas</span>
+                    <Button 
+                      icon="fa-plus" 
+                      onClick={() => setIsAddDebtModalOpen(true)}
+                      className="text-sm"
+                    >
+                      Agregar Deuda
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <InputGroup label="Buscar Deudas">
+                    <Input 
+                      type="text" 
+                      placeholder="Buscar por deudor o descripción..." 
+                      value={debtsSearchTerm} 
+                      onChange={e => setDebtsSearchTerm(e.target.value)} 
+                    />
+                  </InputGroup>
+                  
+                  <div className="overflow-x-auto mt-4">
+                    <table className="w-full text-sm text-left">
+                      <thead className="text-xs uppercase bg-slate-800">
+                        <tr>
+                          <th className="px-4 py-3">Deudor</th>
+                          <th className="px-4 py-3">Descripción</th>
+                          <th className="px-4 py-3">Monto</th>
+                          <th className="px-4 py-3">Fecha Límite</th>
+                          <th className="px-4 py-3">Estado</th>
+                          <th className="px-4 py-3">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-700">
+                        {filteredDebts.map(debt => {
+                          const dueDate = new Date(debt.dueDate);
+                          const today = new Date();
+                          const isOverdue = debt.status === 'PENDING' && dueDate < today;
+                          
+                          return (
+                            <tr key={debt.id} className="hover:bg-slate-800/50">
+                              <td className="px-4 py-3 font-medium">{debt.debtorName}</td>
+                              <td className="px-4 py-3">{debt.description}</td>
+                              <td className="px-4 py-3 font-semibold">${debt.amount.toFixed(2)}</td>
+                              <td className="px-4 py-3">
+                                <span className={isOverdue ? 'text-danger' : ''}>
+                                  {dueDate.toLocaleDateString('es-ES')}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(debt.status)}`}>
+                                  {getStatusText(debt.status)}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex gap-2">
+                                  {debt.status !== 'PAID' && (
+                                    <Button 
+                                      size="sm" 
+                                      variant="success"
+                                      onClick={() => {
+                                        setSelectedDebt(debt);
+                                        setIsPaymentModalOpen(true);
+                                      }}
+                                    >
+                                      <Icon name="fa-money-bill" />
+                                    </Button>
+                                  )}
+                                  <Button 
+                                    size="sm" 
+                                    variant="secondary"
+                                    onClick={() => {
+                                      setEditingDebt(debt);
+                                      setIsAddDebtModalOpen(true);
+                                    }}
+                                  >
+                                    <Icon name="fa-edit" />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {debtsTab === 'payments' && (
+              <Card>
+                <CardHeader icon="fa-money-bill">
+                  <span>Historial de Pagos</span>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead className="text-xs uppercase bg-slate-800">
+                        <tr>
+                          <th className="px-4 py-3">Fecha</th>
+                          <th className="px-4 py-3">Deudor</th>
+                          <th className="px-4 py-3">Monto</th>
+                          <th className="px-4 py-3">Método</th>
+                          <th className="px-4 py-3">Recibido por</th>
+                          <th className="px-4 py-3">Notas</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-700">
+                        {state.debtPayments.map(payment => (
+                          <tr key={payment.id} className="hover:bg-slate-800/50">
+                            <td className="px-4 py-3">
+                              {new Date(payment.paymentDate).toLocaleDateString('es-ES')}
+                            </td>
+                            <td className="px-4 py-3 font-medium">
+                              {state.debts.find(d => d.id === payment.debtId)?.debtorName || 'N/A'}
+                            </td>
+                            <td className="px-4 py-3 font-semibold text-success">
+                              ${payment.amount.toFixed(2)}
+                            </td>
+                            <td className="px-4 py-3">{payment.paymentMethod}</td>
+                            <td className="px-4 py-3">{payment.receivedByWorkerName}</td>
+                            <td className="px-4 py-3">{payment.notes || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
         
@@ -777,8 +1217,259 @@ const PosPage: React.FC = () => {
           handleCloseRegister={handleCloseRegister}
         />
         )}
-    </div>
-  );
-};
+
+        {/* Modales para gestión de deudas */}
+        {isAddDebtorModalOpen && (
+          <Modal
+            isOpen={isAddDebtorModalOpen}
+            onClose={() => {
+              setIsAddDebtorModalOpen(false);
+              setEditingDebtor(null);
+            }}
+            title={editingDebtor ? 'Editar Deudor' : 'Agregar Deudor'}
+          >
+            <DebtorForm
+              debtor={editingDebtor}
+              onSave={handleAddDebtor}
+              onCancel={() => {
+                setIsAddDebtorModalOpen(false);
+                setEditingDebtor(null);
+              }}
+            />
+          </Modal>
+        )}
+
+        {isAddDebtModalOpen && (
+          <Modal
+            isOpen={isAddDebtModalOpen}
+            onClose={() => {
+              setIsAddDebtModalOpen(false);
+              setEditingDebt(null);
+            }}
+            title={editingDebt ? 'Editar Deuda' : 'Agregar Deuda'}
+          >
+            <DebtForm
+              debt={editingDebt}
+              debtors={state.debtors}
+              onSave={handleAddDebt}
+              onCancel={() => {
+                setIsAddDebtModalOpen(false);
+                setEditingDebt(null);
+              }}
+            />
+          </Modal>
+        )}
+
+        {isPaymentModalOpen && selectedDebt && (
+          <Modal
+            isOpen={isPaymentModalOpen}
+            onClose={() => {
+              setIsPaymentModalOpen(false);
+              setSelectedDebt(null);
+            }}
+            title="Registrar Pago"
+          >
+            <PaymentForm
+              debt={selectedDebt}
+              onSave={handleAddPayment}
+              onCancel={() => {
+                setIsPaymentModalOpen(false);
+                setSelectedDebt(null);
+              }}
+            />
+          </Modal>
+        )}
+      </div>
+    );
+  };
+
+  // Componentes de formularios
+  const DebtorForm: React.FC<{
+    debtor?: any;
+    onSave: (data: any) => void;
+    onCancel: () => void;
+  }> = ({ debtor, onSave, onCancel }) => {
+    const [name, setName] = useState(debtor?.name || '');
+    const [phone, setPhone] = useState(debtor?.phone || '');
+    const [email, setEmail] = useState(debtor?.email || '');
+    const [address, setAddress] = useState(debtor?.address || '');
+    const [creditLimit, setCreditLimit] = useState(debtor?.creditLimit?.toString() || '0');
+    const [notes, setNotes] = useState(debtor?.notes || '');
+
+    const handleSubmit = () => {
+      if (!name.trim() || !phone.trim()) {
+        alert('Nombre y teléfono son obligatorios.');
+        return;
+      }
+      onSave({
+        name: name.trim(),
+        phone: phone.trim(),
+        email: email.trim() || undefined,
+        address: address.trim() || undefined,
+        creditLimit: Number(creditLimit) || 0,
+        isActive: true,
+        notes: notes.trim() || undefined,
+      });
+    };
+
+    return (
+      <div className="space-y-4">
+        <InputGroup label="Nombre Completo *">
+          <Input value={name} onChange={e => setName(e.target.value)} placeholder="Ej: Juan Pérez" />
+        </InputGroup>
+        <InputGroup label="Teléfono *">
+          <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="Ej: +53 5 123 4567" />
+        </InputGroup>
+        <InputGroup label="Email">
+          <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="juan@email.com" />
+        </InputGroup>
+        <InputGroup label="Dirección">
+          <Input value={address} onChange={e => setAddress(e.target.value)} placeholder="Dirección completa" />
+        </InputGroup>
+        <InputGroup label="Límite de Crédito (CUP)">
+          <Input type="number" value={creditLimit} onChange={e => setCreditLimit(e.target.value)} placeholder="0.00" min="0" step="0.01" />
+        </InputGroup>
+        <InputGroup label="Notas">
+          <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Información adicional" />
+        </InputGroup>
+        <div className="flex justify-end gap-2">
+          <Button size="sm" variant="secondary" onClick={onCancel}>Cancelar</Button>
+          <Button size="sm" icon="fa-save" onClick={handleSubmit}>
+            {debtor ? 'Actualizar' : 'Guardar'} Deudor
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  const DebtForm: React.FC<{
+    debt?: any;
+    debtors: any[];
+    onSave: (data: any) => void;
+    onCancel: () => void;
+  }> = ({ debt, debtors, onSave, onCancel }) => {
+    const [debtorId, setDebtorId] = useState(debt?.debtorId?.toString() || '');
+    const [amount, setAmount] = useState(debt?.amount?.toString() || '');
+    const [description, setDescription] = useState(debt?.description || '');
+    const [dueDate, setDueDate] = useState(debt?.dueDate || '');
+    const [notes, setNotes] = useState(debt?.notes || '');
+
+    const handleSubmit = () => {
+      if (!debtorId || !amount || !description.trim() || !dueDate) {
+        alert('Todos los campos son obligatorios.');
+        return;
+      }
+      const debtor = debtors.find(d => d.id === Number(debtorId));
+      if (!debtor) {
+        alert('Deudor no encontrado.');
+        return;
+      }
+      onSave({
+        debtorId: Number(debtorId),
+        debtorName: debtor.name,
+        amount: Number(amount),
+        originalAmount: Number(amount),
+        description: description.trim(),
+        dueDate,
+        status: 'PENDING',
+        notes: notes.trim() || undefined,
+      });
+    };
+
+    return (
+      <div className="space-y-4">
+        <InputGroup label="Deudor *">
+          <Select value={debtorId} onChange={e => setDebtorId(e.target.value)}>
+            <option value="">Seleccionar deudor</option>
+            {debtors.map(debtor => (
+              <option key={debtor.id} value={debtor.id}>{debtor.name} - {debtor.phone}</option>
+            ))}
+          </Select>
+        </InputGroup>
+        <InputGroup label="Monto (CUP) *">
+          <Input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" min="0" step="0.01" />
+        </InputGroup>
+        <InputGroup label="Descripción *">
+          <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Descripción de la deuda" />
+        </InputGroup>
+        <InputGroup label="Fecha Límite *">
+          <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} min={new Date().toISOString().split('T')[0]} />
+        </InputGroup>
+        <InputGroup label="Notas">
+          <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notas adicionales" />
+        </InputGroup>
+        <div className="flex justify-end gap-2">
+          <Button size="sm" variant="secondary" onClick={onCancel}>Cancelar</Button>
+          <Button size="sm" icon="fa-save" onClick={handleSubmit}>
+            {debt ? 'Actualizar' : 'Guardar'} Deuda
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  const PaymentForm: React.FC<{
+    debt: any;
+    onSave: (data: any) => void;
+    onCancel: () => void;
+  }> = ({ debt, onSave, onCancel }) => {
+    const { currentUser } = useContext(DataContext);
+    const [amount, setAmount] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState('CASH');
+    const [notes, setNotes] = useState('');
+
+    const handleSubmit = () => {
+      if (!amount || !currentUser) {
+        alert('Monto es obligatorio.');
+        return;
+      }
+      const paymentAmount = Number(amount);
+      if (paymentAmount <= 0 || paymentAmount > debt.amount) {
+        alert('El monto debe ser mayor a 0 y no puede exceder la deuda.');
+        return;
+      }
+      onSave({
+        debtId: debt.id,
+        amount: paymentAmount,
+        paymentDate: new Date().toISOString(),
+        paymentMethod,
+        receivedByWorkerId: currentUser.id,
+        receivedByWorkerName: currentUser.name,
+        notes: notes.trim() || undefined,
+      });
+    };
+
+    return (
+      <div className="space-y-4">
+        <div className="bg-slate-900/50 p-4 rounded-lg">
+          <h4 className="font-semibold mb-2">Información de la Deuda</h4>
+          <p><strong>Deudor:</strong> {debt.debtorName}</p>
+          <p><strong>Descripción:</strong> {debt.description}</p>
+          <p><strong>Monto Restante:</strong> ${debt.amount.toFixed(2)} CUP</p>
+        </div>
+        <InputGroup label="Monto a Pagar (CUP) *">
+          <Input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" min="0" max={debt.amount} step="0.01" />
+        </InputGroup>
+        <InputGroup label="Método de Pago">
+          <Select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}>
+            <option value="CASH">Efectivo</option>
+            <option value="MLC">MLC</option>
+            <option value="USD">USD</option>
+            <option value="TRANSFER">Transferencia</option>
+            <option value="OTHER">Otro</option>
+          </Select>
+        </InputGroup>
+        <InputGroup label="Notas">
+          <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notas del pago" />
+        </InputGroup>
+        <div className="flex justify-end gap-2">
+          <Button size="sm" variant="secondary" onClick={onCancel}>Cancelar</Button>
+          <Button size="sm" icon="fa-money-bill" onClick={handleSubmit}>
+            Registrar Pago
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
 export default PosPage;

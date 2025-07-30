@@ -11,7 +11,7 @@ const NAV_LINKS = [
   { label: 'Nómina', icon: 'fa-money-check-alt', page: 'Payroll', path: '/nomina' },
   { label: 'Trabajadores', icon: 'fa-users', page: 'Workers', path: '/trabajadores' },
   { label: 'AI', icon: 'fa-robot', page: 'AI', path: '/ai' },
-  { label: 'Deudas', icon: 'fa-credit-card', page: 'Debts', path: '/deudas' },
+
   { label: 'Configuración', icon: 'fa-cog', page: 'Config', path: '/config' },
 ];
 

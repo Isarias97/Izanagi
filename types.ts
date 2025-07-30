@@ -196,6 +196,6 @@ export enum Page {
   Payroll = 'payroll',
   Workers = 'workers',
   AI = 'ai',
-  Debts = 'debts',
+
   Config = 'config',
 }

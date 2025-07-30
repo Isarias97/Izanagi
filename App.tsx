@@ -19,7 +19,7 @@ const WorkersPage = lazy(() => import('./pages/WorkersPage'));
 const AIAssistantPage = lazy(() => import('./pages/AIAssistantPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const PayrollPage = lazy(() => import('./pages/PayrollPage').then(module => ({ default: module.PayrollPage })));
-const DebtsPage = lazy(() => import('./pages/DebtsPage'));
+
 
 const loadAndMigrateState = (): AppState => {
   try {
@@ -106,7 +106,7 @@ const PAGE_TO_PATH: Record<string, string> = {
   Payroll: '/nomina',
   Workers: '/trabajadores',
   AI: '/ai',
-  Debts: '/deudas',
+
   Config: '/config',
 };
 const PATH_TO_PAGE: Record<string, string> = {
@@ -117,7 +117,7 @@ const PATH_TO_PAGE: Record<string, string> = {
   '/nomina': 'Payroll',
   '/trabajadores': 'Workers',
   '/ai': 'AI',
-  '/deudas': 'Debts',
+
   '/config': 'Config',
 };
 
@@ -159,7 +159,7 @@ function AppRoutes({
       'F5': 'Payroll',
       'F6': 'Workers',
       'F7': 'AI',
-      'F8': 'Debts',
+
     };
     if (shortcutMap[e.key] && !isInputFocused) {
         e.preventDefault();
@@ -256,7 +256,7 @@ function AppRoutes({
               <Route path="/nomina" element={<Suspense fallback={<div className="p-4 sm:p-6 text-center text-sm">Cargando...</div>}><PayrollPage /></Suspense>} />
               <Route path="/trabajadores" element={<Suspense fallback={<div className="p-4 sm:p-6 text-center text-sm">Cargando...</div>}><WorkersPage /></Suspense>} />
               <Route path="/ai" element={<Suspense fallback={<div className="p-4 sm:p-6 text-center text-sm">Cargando...</div>}><AIAssistantPage /></Suspense>} />
-              <Route path="/deudas" element={<Suspense fallback={<div className="p-4 sm:p-6 text-center text-sm">Cargando...</div>}><DebtsPage /></Suspense>} />
+
               <Route path="/config" element={<Suspense fallback={<div className="p-4 sm:p-6 text-center text-sm">Cargando...</div>}><ConfigPage /></Suspense>} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
