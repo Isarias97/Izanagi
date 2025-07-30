@@ -1,0 +1,5 @@
+[33m723a863[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m fix: Add Deudas page to mobile navigation
+[33m8a81c38[m fix: Resolve production build and module loading issues
+[33mdf5164e[m feat: Add complete debt management system
+[33m82d09e1[m Fix: Configure API key and security headers for PWA
+[33m37134bd[m ✨ Mejora completa del reporte de auditoría: 100% en español, denominaciones detalladas, productos vendidos, inversión recuperada, ganancia y división de pagos/reinversión

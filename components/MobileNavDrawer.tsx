@@ -34,7 +34,7 @@ const NavLink: React.FC<{
     <button
       ref={isFirst ? undefined : undefined}
       className={`
-        w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-base font-semibold 
+        w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-medium 
         transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent 
         active:scale-95 touch-manipulation select-none
         ${isActive 
@@ -61,13 +61,13 @@ const NavLink: React.FC<{
 
 // Componente de información del usuario memoizado
 const UserInfo: React.FC<{ currentUser: { name: string; role: string } }> = React.memo(({ currentUser }) => (
-  <div className="mb-6 flex items-center gap-3 p-4 bg-black/20 rounded-2xl">
-    <div className="w-12 h-12 bg-accent/20 rounded-full flex items-center justify-center">
-      <Icon name="fa-user-circle" className="text-2xl text-accent" />
+  <div className="mb-4 sm:mb-5 flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-black/20 rounded-xl">
+    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/20 rounded-full flex items-center justify-center">
+      <Icon name="fa-user-circle" className="text-lg sm:text-2xl text-accent" />
     </div>
     <div className="flex-1 min-w-0">
-      <div className="font-bold text-white text-lg truncate">{currentUser.name}</div>
-      <div className="text-sm text-gray-400 truncate">{currentUser.role}</div>
+      <div className="font-bold text-white text-sm sm:text-lg truncate">{currentUser.name}</div>
+      <div className="text-xs sm:text-sm text-gray-400 truncate">{currentUser.role}</div>
     </div>
   </div>
 ));
@@ -219,9 +219,10 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
       {/* Botón hamburguesa fijo */}
       <Button
         variant="icon"
+        size="md"
         className={`
-          fixed top-3 left-3 z-50 bg-primary text-white shadow-2xl 
-          lg:hidden focus:ring-2 focus:ring-accent w-12 h-12 
+          fixed top-2 left-2 z-50 bg-primary text-white shadow-lg 
+          lg:hidden focus:ring-2 focus:ring-accent w-10 h-10 sm:w-12 sm:h-12 
           transition-all duration-300 flex items-center justify-center
           hover:bg-primary/90 active:scale-95
           ${isOpen ? 'rotate-90' : ''}
@@ -254,8 +255,8 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
         ref={drawerRef}
         id="mobile-drawer"
         className={`
-          fixed top-0 left-0 h-full w-72 max-w-[85vw] bg-gradient-to-b from-dark-card to-dark-card/95 
-          shadow-2xl z-50 transform transition-transform duration-300 ease-out
+          fixed top-0 left-0 h-full w-64 sm:w-72 max-w-[80vw] sm:max-w-[85vw] bg-gradient-to-b from-dark-card to-dark-card/95 
+          shadow-xl z-50 transform transition-transform duration-300 ease-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:hidden flex flex-col outline-none border-r border-accent/20
         `}
@@ -264,25 +265,25 @@ const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
         aria-modal="true"
         tabIndex={-1}
       >
-        {/* Header del drawer */}
-        <div className="p-6 border-b border-accent/20">
-          <div className="flex items-center gap-3">
-            <Icon name="fa-cash-register" className="text-2xl text-accent" />
+        {/* Header del drawer optimizado */}
+        <div className="p-4 sm:p-5 border-b border-accent/20">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Icon name="fa-cash-register" className="text-xl sm:text-2xl text-accent" />
             <div>
-              <h2 className="text-lg font-bold text-white">Izanagi</h2>
-              <p className="text-sm text-gray-400">Sistema de Ventas</p>
+              <h2 className="text-base sm:text-lg font-bold text-white">Izanagi</h2>
+              <p className="text-xs sm:text-sm text-gray-400">Sistema de Ventas</p>
             </div>
           </div>
         </div>
 
-        {/* Contenido del drawer */}
-        <div className="flex-1 flex flex-col p-4 overflow-y-auto">
+        {/* Contenido del drawer optimizado */}
+        <div className="flex-1 flex flex-col p-3 sm:p-4 overflow-y-auto">
           {/* Información del usuario */}
           {currentUser && <UserInfo currentUser={currentUser} />}
 
           {/* Enlaces de navegación */}
           <nav aria-label="Navegación principal">
-            <ul className="space-y-2">
+            <ul className="space-y-1.5 sm:space-y-2">
               {NAV_LINKS.map((link, index) => (
                 <NavLink
                   key={link.page}

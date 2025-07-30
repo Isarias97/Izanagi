@@ -36,7 +36,7 @@ const DebtorForm: React.FC<{
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <InputGroup label="Nombre Completo *">
         <Input value={name} onChange={e => setName(e.target.value)} placeholder="Ej: Juan Pérez" />
       </InputGroup>
@@ -55,9 +55,9 @@ const DebtorForm: React.FC<{
       <InputGroup label="Notas">
         <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Información adicional" />
       </InputGroup>
-      <div className="flex justify-end gap-4">
-        <Button onClick={onCancel}>Cancelar</Button>
-        <Button icon="fa-save" onClick={handleSubmit}>
+      <div className="flex justify-end gap-2 sm:gap-4">
+        <Button size="sm" variant="secondary" onClick={onCancel}>Cancelar</Button>
+        <Button size="sm" icon="fa-save" onClick={handleSubmit}>
           {debtor ? 'Actualizar' : 'Guardar'} Deudor
         </Button>
       </div>
@@ -101,7 +101,7 @@ const DebtForm: React.FC<{
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <InputGroup label="Deudor *">
         <Select value={debtorId} onChange={e => setDebtorId(e.target.value)}>
           <option value="">Seleccionar deudor</option>
@@ -124,9 +124,9 @@ const DebtForm: React.FC<{
       <InputGroup label="Notas">
         <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Información adicional" />
       </InputGroup>
-      <div className="flex justify-end gap-4">
-        <Button onClick={onCancel}>Cancelar</Button>
-        <Button icon="fa-save" onClick={handleSubmit}>
+      <div className="flex justify-end gap-2 sm:gap-4">
+        <Button size="sm" variant="secondary" onClick={onCancel}>Cancelar</Button>
+        <Button size="sm" icon="fa-save" onClick={handleSubmit}>
           {debt ? 'Actualizar' : 'Registrar'} Deuda
         </Button>
       </div>
@@ -169,12 +169,12 @@ const PaymentForm: React.FC<{
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-slate-800/60 p-4 rounded-lg">
-        <h3 className="font-semibold mb-2">Información de la Deuda</h3>
-        <p><strong>Deudor:</strong> {debt.debtorName}</p>
-        <p><strong>Descripción:</strong> {debt.description}</p>
-        <p><strong>Monto Restante:</strong> {remainingAmount.toFixed(2)} CUP</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="bg-slate-800/60 p-3 sm:p-4 rounded-lg">
+        <h3 className="font-semibold mb-2 text-sm sm:text-base">Información de la Deuda</h3>
+        <p className="text-xs sm:text-sm"><strong>Deudor:</strong> {debt.debtorName}</p>
+        <p className="text-xs sm:text-sm"><strong>Descripción:</strong> {debt.description}</p>
+        <p className="text-xs sm:text-sm"><strong>Monto Restante:</strong> {remainingAmount.toFixed(2)} CUP</p>
       </div>
       <InputGroup label="Monto a Pagar (CUP) *">
         <Input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" min="0" max={remainingAmount} step="0.01" />
@@ -191,9 +191,9 @@ const PaymentForm: React.FC<{
       <InputGroup label="Notas">
         <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Información del pago" />
       </InputGroup>
-      <div className="flex justify-end gap-4">
-        <Button onClick={onCancel}>Cancelar</Button>
-        <Button icon="fa-money-bill" onClick={handleSubmit}>
+      <div className="flex justify-end gap-2 sm:gap-4">
+        <Button size="sm" variant="secondary" onClick={onCancel}>Cancelar</Button>
+        <Button size="sm" icon="fa-money-bill" onClick={handleSubmit}>
           Registrar Pago
         </Button>
       </div>
@@ -291,7 +291,7 @@ const DebtsPage: React.FC = () => {
     const updatedDebts = state.debts.map(debt => {
       if (debt.id === data.debtId) {
         const newAmount = debt.amount - data.amount;
-        const newStatus = newAmount <= 0 ? 'PAID' : 'PARTIAL';
+        const newStatus: Debt['status'] = newAmount <= 0 ? 'PAID' : 'PARTIAL';
         return {
           ...debt,
           amount: newAmount,
@@ -341,96 +341,98 @@ const DebtsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header con estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header con estadísticas optimizado */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
         <Card>
-          <CardContent className="text-center">
-            <div className="text-3xl font-bold text-accent">{state.debtors.length}</div>
-            <div className="text-sm text-gray-400">Deudores Activos</div>
+          <CardContent className="text-center p-3 sm:p-4">
+            <div className="text-2xl sm:text-3xl font-bold text-accent">{state.debtors.length}</div>
+            <div className="text-xs sm:text-sm text-gray-400">Deudores Activos</div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="text-center">
-            <div className="text-3xl font-bold text-warning">{totalDebt.toFixed(2)} CUP</div>
-            <div className="text-sm text-gray-400">Deuda Total</div>
+          <CardContent className="text-center p-3 sm:p-4">
+            <div className="text-2xl sm:text-3xl font-bold text-warning">{totalDebt.toFixed(2)} CUP</div>
+            <div className="text-xs sm:text-sm text-gray-400">Deuda Total</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="text-center">
-            <div className="text-3xl font-bold text-danger">{totalOverdue.toFixed(2)} CUP</div>
-            <div className="text-sm text-gray-400">Deudas Vencidas</div>
+        <Card className="sm:col-span-2 md:col-span-1">
+          <CardContent className="text-center p-3 sm:p-4">
+            <div className="text-2xl sm:text-3xl font-bold text-danger">{totalOverdue.toFixed(2)} CUP</div>
+            <div className="text-xs sm:text-sm text-gray-400">Deudas Vencidas</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Tabs de navegación */}
-      <div className="flex flex-wrap gap-2 border-b border-slate-700">
+      {/* Tabs de navegación optimizados */}
+      <div className="flex flex-wrap gap-1 sm:gap-2 border-b border-slate-700">
         <button
           onClick={() => setActiveTab('debtors')}
-          className={`px-4 py-2 rounded-t-lg font-medium transition ${
+          className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-t-lg text-xs sm:text-sm font-medium transition ${
             activeTab === 'debtors' 
               ? 'bg-accent text-primary' 
               : 'bg-slate-800 text-gray-300 hover:bg-slate-700'
           }`}
         >
-          <Icon name="fa-users" className="mr-2" />
+          <Icon name="fa-users" className="mr-1 sm:mr-2" />
           Deudores
         </button>
         <button
           onClick={() => setActiveTab('debts')}
-          className={`px-4 py-2 rounded-t-lg font-medium transition ${
+          className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-t-lg text-xs sm:text-sm font-medium transition ${
             activeTab === 'debts' 
               ? 'bg-accent text-primary' 
               : 'bg-slate-800 text-gray-300 hover:bg-slate-700'
           }`}
         >
-          <Icon name="fa-credit-card" className="mr-2" />
+          <Icon name="fa-credit-card" className="mr-1 sm:mr-2" />
           Deudas
         </button>
         <button
           onClick={() => setActiveTab('payments')}
-          className={`px-4 py-2 rounded-t-lg font-medium transition ${
+          className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-t-lg text-xs sm:text-sm font-medium transition ${
             activeTab === 'payments' 
               ? 'bg-accent text-primary' 
               : 'bg-slate-800 text-gray-300 hover:bg-slate-700'
           }`}
         >
-          <Icon name="fa-money-bill" className="mr-2" />
+          <Icon name="fa-money-bill" className="mr-1 sm:mr-2" />
           Pagos
         </button>
         <button
           onClick={() => setActiveTab('overdue')}
-          className={`px-4 py-2 rounded-t-lg font-medium transition ${
+          className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-t-lg text-xs sm:text-sm font-medium transition ${
             activeTab === 'overdue' 
               ? 'bg-accent text-primary' 
               : 'bg-slate-800 text-gray-300 hover:bg-slate-700'
           }`}
         >
-          <Icon name="fa-exclamation-triangle" className="mr-2" />
+          <Icon name="fa-exclamation-triangle" className="mr-1 sm:mr-2" />
           Vencidas ({overdueDebts.length})
         </button>
       </div>
 
-      {/* Búsqueda */}
-      <div className="flex gap-4 items-center">
-        <InputGroup label="Buscar" className="flex-1">
+      {/* Búsqueda optimizada */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center">
+        <InputGroup label="Buscar" className="flex-1 w-full">
           <Input 
             value={searchTerm} 
             onChange={e => setSearchTerm(e.target.value)} 
             placeholder="Buscar por nombre, teléfono o descripción..." 
           />
         </InputGroup>
-        {activeTab === 'debtors' && (
-          <Button icon="fa-plus" onClick={() => setIsAddDebtorModalOpen(true)}>
-            Agregar Deudor
-          </Button>
-        )}
-        {activeTab === 'debts' && (
-          <Button icon="fa-plus" onClick={() => setIsAddDebtModalOpen(true)}>
-            Registrar Deuda
-          </Button>
-        )}
+        <div className="flex gap-2 w-full sm:w-auto">
+          {activeTab === 'debtors' && (
+            <Button size="sm" icon="fa-plus" onClick={() => setIsAddDebtorModalOpen(true)}>
+              Agregar Deudor
+            </Button>
+          )}
+          {activeTab === 'debts' && (
+            <Button size="sm" icon="fa-plus" onClick={() => setIsAddDebtModalOpen(true)}>
+              Registrar Deuda
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Contenido de tabs */}
@@ -439,16 +441,16 @@ const DebtsPage: React.FC = () => {
           <CardHeader icon="fa-users">Lista de Deudores</CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left text-gray-300">
+              <table className="w-full text-xs sm:text-sm text-left text-gray-300">
                 <thead className="text-xs text-gray-300 uppercase bg-secondary">
                   <tr>
-                    <th className="px-6 py-3">Nombre</th>
-                    <th className="px-6 py-3">Teléfono</th>
-                    <th className="px-6 py-3">Email</th>
-                    <th className="px-6 py-3 text-right">Límite Crédito</th>
-                    <th className="px-6 py-3 text-right">Deuda Total</th>
-                    <th className="px-6 py-3 text-center">Estado</th>
-                    <th className="px-6 py-3 text-right">Acciones</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3">Nombre</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3">Teléfono</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 hidden sm:table-cell">Email</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-right">Límite Crédito</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-right">Deuda Total</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-center">Estado</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -461,26 +463,27 @@ const DebtsPage: React.FC = () => {
                   ) : (
                     filteredDebtors.map(debtor => (
                       <tr key={debtor.id} className="border-b border-slate-700 bg-slate-900/30">
-                        <td className="px-6 py-4 font-semibold">{debtor.name}</td>
-                        <td className="px-6 py-4">{debtor.phone}</td>
-                        <td className="px-6 py-4">{debtor.email || '-'}</td>
-                        <td className="px-6 py-4 text-right">{debtor.creditLimit.toFixed(2)} CUP</td>
-                        <td className="px-6 py-4 text-right font-bold">{debtor.totalDebt.toFixed(2)} CUP</td>
-                        <td className="px-6 py-4 text-center">
-                          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                        <td className="px-3 sm:px-4 py-2 sm:py-4 font-semibold text-xs sm:text-sm">{debtor.name}</td>
+                        <td className="px-3 sm:px-4 py-2 sm:py-4 text-xs sm:text-sm">{debtor.phone}</td>
+                        <td className="px-3 sm:px-4 py-2 sm:py-4 text-xs sm:text-sm hidden sm:table-cell">{debtor.email || '-'}</td>
+                        <td className="px-3 sm:px-4 py-2 sm:py-4 text-right text-xs sm:text-sm">{debtor.creditLimit.toFixed(2)} CUP</td>
+                        <td className="px-3 sm:px-4 py-2 sm:py-4 text-right font-bold text-xs sm:text-sm">{debtor.totalDebt.toFixed(2)} CUP</td>
+                        <td className="px-3 sm:px-4 py-2 sm:py-4 text-center">
+                          <span className={`px-2 sm:px-3 py-1 text-xs font-semibold rounded-full ${
                             debtor.isActive ? 'bg-success/20 text-green-300' : 'bg-danger/20 text-red-300'
                           }`}>
                             {debtor.isActive ? 'Activo' : 'Inactivo'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex gap-2 justify-end">
+                        <td className="px-3 sm:px-4 py-2 sm:py-4 text-right">
+                          <div className="flex gap-1 sm:gap-2 justify-end">
                             <Button 
                               variant="icon" 
+                              size="sm"
                               onClick={() => setEditingDebtor(debtor)}
-                              className="w-8 h-8"
+                              className="w-7 h-7 sm:w-8 sm:h-8"
                             >
-                              <Icon name="fa-edit" />
+                              <Icon name="fa-edit" className="text-xs sm:text-sm" />
                             </Button>
                           </div>
                         </td>
@@ -499,15 +502,15 @@ const DebtsPage: React.FC = () => {
           <CardHeader icon="fa-credit-card">Lista de Deudas</CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left text-gray-300">
+              <table className="w-full text-xs sm:text-sm text-left text-gray-300">
                 <thead className="text-xs text-gray-300 uppercase bg-secondary">
                   <tr>
-                    <th className="px-6 py-3">Deudor</th>
-                    <th className="px-6 py-3">Descripción</th>
-                    <th className="px-6 py-3 text-right">Monto</th>
-                    <th className="px-6 py-3 text-center">Vencimiento</th>
-                    <th className="px-6 py-3 text-center">Estado</th>
-                    <th className="px-6 py-3 text-right">Acciones</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3">Deudor</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3">Descripción</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-right">Monto</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-center">Vencimiento</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-center">Estado</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -520,29 +523,30 @@ const DebtsPage: React.FC = () => {
                   ) : (
                     filteredDebts.map(debt => (
                       <tr key={debt.id} className="border-b border-slate-700 bg-slate-900/30">
-                        <td className="px-6 py-4 font-semibold">{debt.debtorName}</td>
-                        <td className="px-6 py-4">{debt.description}</td>
-                        <td className="px-6 py-4 text-right font-bold">{debt.amount.toFixed(2)} CUP</td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-3 sm:px-4 py-2 sm:py-4 font-semibold text-xs sm:text-sm">{debt.debtorName}</td>
+                        <td className="px-3 sm:px-4 py-2 sm:py-4 text-xs sm:text-sm">{debt.description}</td>
+                        <td className="px-3 sm:px-4 py-2 sm:py-4 text-right font-bold text-xs sm:text-sm">{debt.amount.toFixed(2)} CUP</td>
+                        <td className="px-3 sm:px-4 py-2 sm:py-4 text-center text-xs sm:text-sm">
                           {new Date(debt.dueDate).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(debt.status)}`}>
+                        <td className="px-3 sm:px-4 py-2 sm:py-4 text-center">
+                          <span className={`px-2 sm:px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(debt.status)}`}>
                             {getStatusText(debt.status)}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex gap-2 justify-end">
+                        <td className="px-3 sm:px-4 py-2 sm:py-4 text-right">
+                          <div className="flex gap-1 sm:gap-2 justify-end">
                             {debt.status !== 'PAID' && (
                               <Button 
                                 variant="icon" 
+                                size="sm"
                                 onClick={() => {
                                   setSelectedDebt(debt);
                                   setIsPaymentModalOpen(true);
                                 }}
-                                className="w-8 h-8 bg-success/30 hover:bg-success/60"
+                                className="w-7 h-7 sm:w-8 sm:h-8 bg-success/30 hover:bg-success/60"
                               >
-                                <Icon name="fa-money-bill" />
+                                <Icon name="fa-money-bill" className="text-xs sm:text-sm" />
                               </Button>
                             )}
                             <Button 

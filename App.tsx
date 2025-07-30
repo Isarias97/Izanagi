@@ -206,33 +206,33 @@ function AppRoutes({
         {/* Componente PWA Install Prompt */}
         <PWAInstallPrompt />
         
-        {/* Header mejorado con navegación móvil */}
-        <header className="bg-primary shadow-lg sticky top-0 z-40 p-2 flex flex-row items-center justify-between gap-2 min-h-[56px] w-full max-w-screen-xl mx-auto">
+        {/* Header optimizado */}
+        <header className="bg-primary shadow-lg sticky top-0 z-40 p-2 sm:p-3 flex flex-row items-center justify-between gap-2 min-h-[48px] sm:min-h-[56px] w-full max-w-screen-xl mx-auto">
           {/* Logo y título */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Icon name="fa-cash-register" className="text-accent text-xl flex-shrink-0" />
+            <Icon name="fa-cash-register" className="text-accent text-lg sm:text-xl flex-shrink-0" />
             <div className="flex flex-col min-w-0">
-              <h1 className="text-sm font-semibold text-white truncate">
-                Izanagi <span className="text-xs bg-accent text-primary font-bold py-0.5 px-2 rounded-full ml-1">CUP</span>
+              <h1 className="text-xs sm:text-sm font-semibold text-white truncate">
+                Izanagi <span className="text-[10px] sm:text-xs bg-accent text-primary font-bold py-0.5 px-1.5 sm:px-2 rounded-full ml-1">CUP</span>
               </h1>
-              <span className="text-[10px] mt-0.5 text-accent/80 italic font-medium drop-shadow-sm hidden sm:block" style={{letterSpacing: '0.5px'}}>by Isarias</span>
+              <span className="text-[8px] sm:text-[10px] mt-0.5 text-accent/80 italic font-medium drop-shadow-sm hidden sm:block" style={{letterSpacing: '0.5px'}}>by Isarias</span>
             </div>
           </div>
           
-          {/* Info usuario y saldos en móvil */}
-          <div className="flex flex-col items-end gap-0.5 text-right flex-shrink-0 min-w-[110px]">
+          {/* Info usuario y saldos */}
+          <div className="flex flex-col items-end gap-0.5 text-right flex-shrink-0 min-w-[100px] sm:min-w-[110px]">
             <div className="flex items-center gap-1">
-              <Icon name="fa-wallet" className="text-accent text-base" />
-              <span className="text-[11px] text-white font-bold">{state.investmentBalance.toFixed(2)} CUP</span>
+              <Icon name="fa-wallet" className="text-accent text-sm sm:text-base" />
+              <span className="text-[10px] sm:text-[11px] text-white font-bold">{state.investmentBalance.toFixed(2)} CUP</span>
             </div>
             <div className="flex items-center gap-1">
-              <Icon name="fa-users" className="text-accent text-base" />
-              <span className="text-[11px] text-white font-bold">{state.workerPayoutBalance.toFixed(2)} CUP</span>
+              <Icon name="fa-users" className="text-accent text-sm sm:text-base" />
+              <span className="text-[10px] sm:text-[11px] text-white font-bold">{state.workerPayoutBalance.toFixed(2)} CUP</span>
             </div>
             <div className="flex items-center gap-1 mt-0.5">
-              <Icon name="fa-user-circle" className="text-accent text-sm" />
-              <span className="text-[11px] text-white font-semibold truncate max-w-[60px]">{currentUser?.name}</span>
-              <span className="text-[9px] text-gray-300 font-medium">{currentUser?.role}</span>
+              <Icon name="fa-user-circle" className="text-accent text-xs sm:text-sm" />
+              <span className="text-[10px] sm:text-[11px] text-white font-semibold truncate max-w-[50px] sm:max-w-[60px]">{currentUser?.name}</span>
+              <span className="text-[8px] sm:text-[9px] text-gray-300 font-medium">{currentUser?.role}</span>
             </div>
           </div>
         </header>
@@ -245,19 +245,19 @@ function AppRoutes({
           onLogout={handleLogout}
         />
 
-        {/* Contenido principal */}
-        <main className="flex-1 w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-4 md:py-6 lg:py-8">
+        {/* Contenido principal optimizado */}
+        <main className="flex-1 w-full max-w-screen-xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 py-2 sm:py-3 md:py-4 lg:py-6">
           <div className="w-full">
             <Routes>
-              <Route path="/" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><PosPage /></Suspense>} />
-              <Route path="/compras" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><PurchasesPage /></Suspense>} />
-              <Route path="/inventario" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><InventoryPage /></Suspense>} />
-              <Route path="/reportes" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><ReportsPage /></Suspense>} />
-              <Route path="/nomina" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><PayrollPage /></Suspense>} />
-              <Route path="/trabajadores" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><WorkersPage /></Suspense>} />
-              <Route path="/ai" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><AIAssistantPage /></Suspense>} />
-              <Route path="/deudas" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><DebtsPage /></Suspense>} />
-              <Route path="/config" element={<Suspense fallback={<div className="p-8 text-center">Cargando...</div>}><ConfigPage /></Suspense>} />
+              <Route path="/" element={<Suspense fallback={<div className="p-4 sm:p-6 text-center text-sm">Cargando...</div>}><PosPage /></Suspense>} />
+              <Route path="/compras" element={<Suspense fallback={<div className="p-4 sm:p-6 text-center text-sm">Cargando...</div>}><PurchasesPage /></Suspense>} />
+              <Route path="/inventario" element={<Suspense fallback={<div className="p-4 sm:p-6 text-center text-sm">Cargando...</div>}><InventoryPage /></Suspense>} />
+              <Route path="/reportes" element={<Suspense fallback={<div className="p-4 sm:p-6 text-center text-sm">Cargando...</div>}><ReportsPage /></Suspense>} />
+              <Route path="/nomina" element={<Suspense fallback={<div className="p-4 sm:p-6 text-center text-sm">Cargando...</div>}><PayrollPage /></Suspense>} />
+              <Route path="/trabajadores" element={<Suspense fallback={<div className="p-4 sm:p-6 text-center text-sm">Cargando...</div>}><WorkersPage /></Suspense>} />
+              <Route path="/ai" element={<Suspense fallback={<div className="p-4 sm:p-6 text-center text-sm">Cargando...</div>}><AIAssistantPage /></Suspense>} />
+              <Route path="/deudas" element={<Suspense fallback={<div className="p-4 sm:p-6 text-center text-sm">Cargando...</div>}><DebtsPage /></Suspense>} />
+              <Route path="/config" element={<Suspense fallback={<div className="p-4 sm:p-6 text-center text-sm">Cargando...</div>}><ConfigPage /></Suspense>} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </div>
@@ -271,16 +271,16 @@ function AppRoutes({
             </div>
         )}
 
-        {/* Footer mejorado */}
+        {/* Footer optimizado */}
         <footer
-          className={`bg-primary text-center p-4 text-sm text-gray-400 transition-all duration-500 ${footerVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
-            fixed bottom-0 left-0 w-full z-50 shadow-3d-card rounded-t-xl sm:rounded-none`}
-          style={{fontWeight:'bold',letterSpacing:'1px',fontSize:'1.1rem',boxShadow:'0 2px 8px 0 rgba(0,42,143,0.18), 0 1.5px 4px 0 rgba(207,20,43,0.12)',maxWidth:'100vw'}}
+          className={`bg-primary text-center p-2 sm:p-3 text-xs sm:text-sm text-gray-400 transition-all duration-500 ${footerVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
+            fixed bottom-0 left-0 w-full z-50 shadow-lg rounded-t-lg sm:rounded-none`}
+          style={{fontWeight:'bold',letterSpacing:'0.5px',fontSize:'0.9rem',boxShadow:'0 2px 8px 0 rgba(0,42,143,0.18), 0 1.5px 4px 0 rgba(207,20,43,0.12)',maxWidth:'100vw'}}
         >
-          <span className="hidden sm:inline">Sistema de Ventas Izanagi v8.2 (Estable) &copy; {new Date().getFullYear()} - Todos los datos se guardan en su navegador.</span>
+          <span className="hidden sm:inline">Sistema de Ventas Izanagi v8.3 (Optimizado) &copy; {new Date().getFullYear()} - Todos los datos se guardan en su navegador.</span>
           <span className="sm:hidden flex items-center justify-center gap-2">
             <span>Creado por Isarias</span>
-            <button className="ml-2 px-2 py-1 rounded bg-accent text-primary font-bold text-xs shadow hover:bg-white/90 transition" onClick={()=>setFooterVisible(false)} aria-label="Ocultar pie">Ocultar</button>
+            <button className="ml-2 px-1.5 py-0.5 rounded bg-accent text-primary font-bold text-[10px] shadow hover:bg-white/90 transition" onClick={()=>setFooterVisible(false)} aria-label="Ocultar pie">Ocultar</button>
           </span>
         </footer>
 
