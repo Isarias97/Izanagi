@@ -18,5 +18,6 @@ export const PAGES = [
   { id: Page.Payroll, label: 'Nómina', icon: 'fa-file-invoice-dollar', shortcut: 'F5' },
   { id: Page.Workers, label: 'Trabajadores', icon: 'fa-users-cog', shortcut: 'F6' },
   { id: Page.AI, label: 'Asistente IA', icon: 'fa-robot', shortcut: 'F7' },
+  { id: Page.Debts, label: 'Deudas', icon: 'fa-credit-card', shortcut: 'F8' },
   { id: Page.Config, label: 'Configuración', icon: 'fa-cog' },
 ];

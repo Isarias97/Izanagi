@@ -132,6 +132,45 @@ export interface PayrollReport {
     details: PayrollDetail[];
 }
 
+export interface Debtor {
+  id: number;
+  name: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  creditLimit: number;
+  totalDebt: number;
+  isActive: boolean;
+  createdAt: string;
+  notes?: string;
+}
+
+export interface Debt {
+  id: number;
+  debtorId: number;
+  debtorName: string; // Para display sin join
+  saleId?: number; // Si la deuda viene de una venta
+  amount: number;
+  originalAmount: number;
+  description: string;
+  dueDate: string;
+  status: 'PENDING' | 'PARTIAL' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+  createdAt: string;
+  updatedAt: string;
+  notes?: string;
+}
+
+export interface DebtPayment {
+  id: number;
+  debtId: number;
+  amount: number;
+  paymentDate: string;
+  paymentMethod: 'CASH' | 'MLC' | 'USD' | 'TRANSFER' | 'OTHER';
+  receivedByWorkerId: number;
+  receivedByWorkerName: string;
+  notes?: string;
+}
+
 export interface AppState {
   products: Product[];
   categories: Category[];
@@ -144,6 +183,9 @@ export interface AppState {
   workers: Worker[];
   auditReports: AuditReport[];
   payrollReports: PayrollReport[];
+  debtors: Debtor[];
+  debts: Debt[];
+  debtPayments: DebtPayment[];
 }
 
 export enum Page {
@@ -154,5 +196,6 @@ export enum Page {
   Payroll = 'payroll',
   Workers = 'workers',
   AI = 'ai',
+  Debts = 'debts',
   Config = 'config',
 }

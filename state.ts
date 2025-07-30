@@ -16,4 +16,7 @@ export const getInitialState = (): AppState => ({
   workers: [],
   auditReports: [],
   payrollReports: [],
+  debtors: [],
+  debts: [],
+  debtPayments: [],
 });
