@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas';
-import { SaleReport, PurchaseReport, TransactionLogEntry, AuditReport, PayrollReport, Worker } from '../types';
+import { SaleReport, PurchaseReport, TransactionLogEntry, AuditReport, PayrollReport, Worker, Debt } from '../types';
 
 // Configuración global del PDF
 const PDF_CONFIG = {
@@ -525,6 +525,95 @@ export class PDFReportGenerator {
   }
 
   // Generar reporte de nómina
+  public generateDebtsReport(debts: Debt[], options: ReportOptions): void {
+    this.addHeader(options);
+
+    // Resumen estadístico
+    const totalDebts = debts.reduce((sum, debt) => sum + debt.amount, 0);
+    const pendingDebts = debts.filter(debt => debt.status === 'PENDING').reduce((sum, debt) => sum + debt.amount, 0);
+    const overdueDebts = debts.filter(debt => {
+      const dueDate = new Date(debt.dueDate);
+      const today = new Date();
+      return debt.status === 'PENDING' && dueDate < today;
+    }).reduce((sum, debt) => sum + debt.amount, 0);
+    const paidDebts = debts.filter(debt => debt.status === 'PAID').reduce((sum, debt) => sum + debt.amount, 0);
+
+    const summary = {
+      'Total de Deudas': `$${totalDebts.toFixed(2)}`,
+      'Pendientes': `$${pendingDebts.toFixed(2)}`,
+      'Vencidas': `$${overdueDebts.toFixed(2)}`,
+      'Pagadas': `$${paidDebts.toFixed(2)}`,
+      'Cantidad de Deudas': debts.length.toString()
+    };
+
+    this.addSummary(summary, 'Resumen de Deudas');
+
+    // Agrupar deudas por deudor
+    const debtsByDebtor = debts.reduce((acc, debt) => {
+      if (!acc[debt.debtorName]) {
+        acc[debt.debtorName] = [];
+      }
+      acc[debt.debtorName].push(debt);
+      return acc;
+    }, {} as { [key: string]: Debt[] });
+
+    // Tabla resumen por deudor
+    const debtorSummaryData = Object.entries(debtsByDebtor).map(([debtorName, debtorDebts]) => {
+      const totalDebt = debtorDebts.reduce((sum, debt) => sum + debt.amount, 0);
+      const pendingDebt = debtorDebts.filter(debt => debt.status === 'PENDING').reduce((sum, debt) => sum + debt.amount, 0);
+      const overdueDebt = debtorDebts.filter(debt => {
+        const dueDate = new Date(debt.dueDate);
+        const today = new Date();
+        return debt.status === 'PENDING' && dueDate < today;
+      }).reduce((sum, debt) => sum + debt.amount, 0);
+
+      return [
+        debtorName,
+        debtorDebts.length.toString(),
+        `$${totalDebt.toFixed(2)}`,
+        `$${pendingDebt.toFixed(2)}`,
+        `$${overdueDebt.toFixed(2)}`,
+        overdueDebt > 0 ? 'Vencida' : pendingDebt > 0 ? 'Pendiente' : 'Pagada'
+      ];
+    });
+
+    this.addTable(
+      ['Deudor', 'Deudas', 'Total', 'Pendiente', 'Vencida', 'Estado'],
+      debtorSummaryData,
+      'Resumen por Deudor'
+    );
+
+    // Detalles de deudas si se solicitan
+    if (options.includeDetails) {
+      this.addNewPage();
+      this.doc.setFontSize(PDF_CONFIG.fontSize.subtitle);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.text('Detalle de Deudas', PDF_CONFIG.margin, this.currentY);
+      this.currentY += 10;
+
+      const detailedData = debts.map(debt => {
+        const dueDate = new Date(debt.dueDate);
+        const today = new Date();
+        const isOverdue = debt.status === 'PENDING' && dueDate < today;
+        
+        return [
+          debt.debtorName,
+          debt.description,
+          `$${debt.amount.toFixed(2)}`,
+          dueDate.toLocaleDateString('es-ES'),
+          debt.status === 'PENDING' ? (isOverdue ? 'Vencida' : 'Pendiente') : debt.status === 'PAID' ? 'Pagada' : debt.status,
+          debt.notes || '-'
+        ];
+      });
+
+      this.addTable(
+        ['Deudor', 'Descripción', 'Monto', 'Fecha Límite', 'Estado', 'Notas'],
+        detailedData,
+        'Detalle Completo de Deudas'
+      );
+    }
+  }
+
   public generatePayrollReport(payroll: PayrollReport, options: ReportOptions): void {
     this.addHeader(options);
 
@@ -680,4 +769,10 @@ export const generateComprehensivePDF = (data: {
   const generator = new PDFReportGenerator();
   generator.generateComprehensiveReport(data, options);
   generator.download(`Reporte_Integral_${new Date().toISOString().split('T')[0]}.pdf`);
+};
+
+export const generateDebtsPDF = (debts: Debt[], options: ReportOptions): void => {
+  const generator = new PDFReportGenerator();
+  generator.generateDebtsReport(debts, options);
+  generator.download(`Reporte_Deudas_${new Date().toISOString().split('T')[0]}.pdf`);
 }; 

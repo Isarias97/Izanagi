@@ -8,7 +8,7 @@ import ReportDownloadButtons from '../components/ReportDownloadButtons';
 
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, LineChart, Line } from 'recharts';
 
-type ReportTab = 'sales' | 'profits' | 'transactions' | 'capital' | 'audit';
+type ReportTab = 'sales' | 'profits' | 'transactions' | 'capital' | 'audit' | 'debts';
 type ProfitPeriod = 'daily' | 'weekly' | 'monthly' | 'annually';
 
 // --- COMPONENTES INTERNOS ---
@@ -437,6 +437,70 @@ const ReportsPage: React.FC = () => {
     };
   }, [state.transactionLog]);
 
+  // Datos de deudas
+  const debtsData = useMemo(() => {
+    const filteredDebts = state.debts.filter(debt => {
+      const debtDate = new Date(debt.createdAt);
+      const start = startDate ? new Date(startDate) : null;
+      const end = endDate ? new Date(endDate) : null;
+      if (start) start.setHours(0, 0, 0, 0);
+      if (end) end.setHours(23, 59, 59, 999);
+      if (start && debtDate < start) return false;
+      if (end && debtDate > end) return false;
+      return true;
+    });
+
+    const totalDebts = filteredDebts.reduce((sum, debt) => sum + debt.amount, 0);
+    const pendingDebts = filteredDebts.filter(debt => debt.status === 'PENDING').reduce((sum, debt) => sum + debt.amount, 0);
+    const overdueDebts = filteredDebts.filter(debt => {
+      const dueDate = new Date(debt.dueDate);
+      const today = new Date();
+      return debt.status === 'PENDING' && dueDate < today;
+    }).reduce((sum, debt) => sum + debt.amount, 0);
+    
+    const debtsByDebtor = filteredDebts.reduce((acc, debt) => {
+      if (!acc[debt.debtorName]) {
+        acc[debt.debtorName] = {
+          name: debt.debtorName,
+          totalDebt: 0,
+          pendingDebt: 0,
+          overdueDebt: 0,
+          debtsCount: 0
+        };
+      }
+      acc[debt.debtorName].totalDebt += debt.amount;
+      acc[debt.debtorName].debtsCount += 1;
+      if (debt.status === 'PENDING') {
+        acc[debt.debtorName].pendingDebt += debt.amount;
+        const dueDate = new Date(debt.dueDate);
+        const today = new Date();
+        if (dueDate < today) {
+          acc[debt.debtorName].overdueDebt += debt.amount;
+        }
+      }
+      return acc;
+    }, {} as {[key: string]: any});
+
+    const debtsChartData = Object.values(debtsByDebtor)
+      .filter((debtor: any) => debtor.pendingDebt > 0)
+      .sort((a: any, b: any) => b.pendingDebt - a.pendingDebt)
+      .slice(0, 10)
+      .map((debtor: any) => ({
+        name: debtor.name,
+        "Deuda Pendiente": debtor.pendingDebt,
+        "Deuda Vencida": debtor.overdueDebt
+      }));
+
+    return {
+      totalDebts,
+      pendingDebts,
+      overdueDebts,
+      debtsByDebtor: Object.values(debtsByDebtor),
+      debtsChartData,
+      filteredDebts
+    };
+  }, [state.debts, startDate, endDate]);
+
   return (
     <Card>
       <CardHeader icon="fa-chart-line">Reportes y Finanzas</CardHeader>
@@ -455,6 +519,7 @@ const ReportsPage: React.FC = () => {
           <button onClick={() => setActiveTab('transactions')} className={`px-4 py-3 text-base font-semibold rounded-t-lg transition min-w-[120px] min-h-[44px] active:scale-95 touch-manipulation no-hover ${activeTab === 'transactions' ? 'bg-accent text-white shadow-md' : 'bg-secondary text-gray-300'}`}>Transacciones</button>
           <button onClick={() => setActiveTab('capital')} className={`px-4 py-3 text-base font-semibold rounded-t-lg transition min-w-[120px] min-h-[44px] active:scale-95 touch-manipulation no-hover ${activeTab === 'capital' ? 'bg-accent text-white shadow-md' : 'bg-secondary text-gray-300'}`}>Capital</button>
           <button onClick={() => setActiveTab('audit')} className={`px-4 py-3 text-base font-semibold rounded-t-lg transition min-w-[120px] min-h-[44px] active:scale-95 touch-manipulation no-hover ${activeTab === 'audit' ? 'bg-accent text-white shadow-md' : 'bg-secondary text-gray-300'}`}>Auditoría</button>
+          <button onClick={() => setActiveTab('debts')} className={`px-4 py-3 text-base font-semibold rounded-t-lg transition min-w-[120px] min-h-[44px] active:scale-95 touch-manipulation no-hover ${activeTab === 'debts' ? 'bg-accent text-white shadow-md' : 'bg-secondary text-gray-300'}`}>Deudas</button>
         </div>
         {activeTab === 'sales' && (
           <SalesTab
@@ -481,8 +546,141 @@ const ReportsPage: React.FC = () => {
         {activeTab === 'capital' && (
           <CapitalTab capitalData={capitalData} investmentBalance={state.investmentBalance} />
         )}
-        {activeTab === 'audit' && (
-                                  <AuditTab auditReports={state.auditReports} workerName={currentWorker} salesReports={state.reports} />
+                {activeTab === 'audit' && (
+          <AuditTab auditReports={state.auditReports} workerName={currentWorker} salesReports={state.reports} />
+        )}
+        {activeTab === 'debts' && (
+          <div className="space-y-8">
+            {/* Botones de descarga específicos para deudas */}
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Reporte de Deudas</h3>
+              <div className="flex gap-2">
+                <Button
+                  variant="primary"
+                  icon="fa-download"
+                  onClick={() => {
+                    const { generateDebtsPDF } = require('../utils/pdfReports');
+                    generateDebtsPDF(debtsData.filteredDebts, {
+                      title: 'Reporte de Deudas',
+                      subtitle: 'Sistema Izanagi',
+                      dateRange: startDate && endDate ? { start: startDate, end: endDate } : undefined,
+                      includeDetails: false
+                    });
+                  }}
+                  className="text-sm"
+                >
+                  PDF Básico
+                </Button>
+                <Button
+                  variant="success"
+                  icon="fa-file-pdf"
+                  onClick={() => {
+                    const { generateDebtsPDF } = require('../utils/pdfReports');
+                    generateDebtsPDF(debtsData.filteredDebts, {
+                      title: 'Reporte Detallado de Deudas',
+                      subtitle: 'Sistema Izanagi',
+                      dateRange: startDate && endDate ? { start: startDate, end: endDate } : undefined,
+                      includeDetails: true
+                    });
+                  }}
+                  className="text-sm"
+                >
+                  PDF Detallado
+                </Button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-slate-900/50 rounded-lg items-end">
+              <InputGroup label="Fecha de inicio">
+                <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+              </InputGroup>
+              <InputGroup label="Fecha de fin">
+                <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+              </InputGroup>
+              <Button icon="fa-times-circle" onClick={() => { setStartDate(''); setEndDate(''); }} disabled={!startDate && !endDate}>
+                Limpiar Filtros
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+              <div className="bg-secondary p-6 rounded-lg">
+                <div className="text-4xl font-bold">{debtsData.filteredDebts.length}</div>
+                <div className="text-sm text-gray-400 mt-1">Deudas Totales</div>
+              </div>
+              <div className="bg-secondary p-6 rounded-lg">
+                <div className="text-4xl font-bold">${debtsData.totalDebts.toFixed(2)}</div>
+                <div className="text-sm text-gray-400 mt-1">Monto Total</div>
+              </div>
+              <div className="bg-warning/20 border border-warning p-6 rounded-lg">
+                <div className="text-4xl font-bold text-warning">${debtsData.pendingDebts.toFixed(2)}</div>
+                <div className="text-sm text-yellow-300/80 mt-1">Pendiente</div>
+              </div>
+              <div className="bg-danger/20 border border-danger p-6 rounded-lg">
+                <div className="text-4xl font-bold text-danger">${debtsData.overdueDebts.toFixed(2)}</div>
+                <div className="text-sm text-red-300/80 mt-1">Vencida</div>
+              </div>
+            </div>
+            
+            <div className="w-full h-80 bg-slate-900/50 p-4 rounded-lg flex items-center justify-center">
+              {debtsData.debtsChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={debtsData.debtsChartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
+                    <XAxis dataKey="name" tick={{ fill: '#94a3b8' }} />
+                    <YAxis tickFormatter={(value) => `$${value}`} tick={{ fill: '#94a3b8' }} />
+                    <Tooltip cursor={{fill: 'rgba(92, 107, 192, 0.2)'}}/>
+                    <Legend />
+                    <Bar dataKey="Deuda Pendiente" fill="#f59e0b" />
+                    <Bar dataKey="Deuda Vencida" fill="#ef4444" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-gray-500">No hay datos de deudas para mostrar en este período.</p>
+              )}
+            </div>
+            
+            <div className="overflow-x-auto rounded-lg border border-slate-700 max-h-[500px] no-scrollbar">
+              <table className="w-full text-sm text-left text-gray-300 min-w-[900px]">
+                <thead className="text-xs text-gray-300 uppercase bg-secondary sticky top-0">
+                  <tr>
+                    <th className="px-4 py-3">Deudor</th>
+                    <th className="px-4 py-3">Deudas</th>
+                    <th className="px-4 py-3">Total Deuda</th>
+                    <th className="px-4 py-3">Pendiente</th>
+                    <th className="px-4 py-3">Vencida</th>
+                    <th className="px-4 py-3">Estado</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700">
+                  {debtsData.debtsByDebtor
+                    .filter((debtor: any) => debtor.totalDebt > 0)
+                    .sort((a: any, b: any) => b.pendingDebt - a.pendingDebt)
+                    .map((debtor: any) => (
+                      <tr key={debtor.name} className="hover:bg-slate-800/50">
+                        <td className="px-4 py-3 font-medium">{debtor.name}</td>
+                        <td className="px-4 py-3">{debtor.debtsCount}</td>
+                        <td className="px-4 py-3">${debtor.totalDebt.toFixed(2)}</td>
+                        <td className="px-4 py-3">${debtor.pendingDebt.toFixed(2)}</td>
+                        <td className="px-4 py-3">
+                          <span className={debtor.overdueDebt > 0 ? 'text-danger font-semibold' : 'text-gray-400'}>
+                            ${debtor.overdueDebt.toFixed(2)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {debtor.overdueDebt > 0 ? (
+                            <span className="px-2 py-1 text-xs font-medium bg-danger/20 text-danger rounded-full">Vencida</span>
+                          ) : debtor.pendingDebt > 0 ? (
+                            <span className="px-2 py-1 text-xs font-medium bg-warning/20 text-warning rounded-full">Pendiente</span>
+                          ) : (
+                            <span className="px-2 py-1 text-xs font-medium bg-success/20 text-success rounded-full">Pagada</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         )}
             </CardContent>
             <style>{`

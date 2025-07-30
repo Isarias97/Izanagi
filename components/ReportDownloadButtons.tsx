@@ -6,7 +6,8 @@ import {
   generateTransactionsPDF, 
   generateAuditPDF, 
   generatePurchasesPDF,
-  generateComprehensivePDF 
+  generateComprehensivePDF,
+  generateDebtsPDF
 } from '../utils/pdfReports';
 
 interface ReportDownloadButtonsProps {
@@ -70,6 +71,10 @@ const ReportDownloadButtons: React.FC<ReportDownloadButtonsProps> = ({
             auditReports: state.auditReports
           }, options);
           break;
+        
+        case 'Deudas':
+          generateDebtsPDF(state.debts, options);
+          break;
       }
     } catch (error) {
       console.error('Error generando PDF:', error);
@@ -112,7 +117,8 @@ const ReportDownloadButtons: React.FC<ReportDownloadButtonsProps> = ({
       'profits': 'Ganancias',
       'transactions': 'Transacciones',
       'capital': 'Capital',
-      'audit': 'Auditoría'
+      'audit': 'Auditoría',
+      'debts': 'Deudas'
     };
     return labels[activeTab] || 'Reporte';
   };
@@ -127,6 +133,8 @@ const ReportDownloadButtons: React.FC<ReportDownloadButtonsProps> = ({
         return state.auditReports.length > 0;
       case 'capital':
         return state.transactionLog.length > 0;
+      case 'debts':
+        return state.debts.length > 0;
       default:
         return true;
     }

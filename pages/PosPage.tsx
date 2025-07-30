@@ -1,5 +1,6 @@
 
 import React, { useState, useContext, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DataContext } from '../context';
 import { SaleItem, Product, Page, TransactionLogEntry, AuditReport, SaleReport } from '../types';
 import { Card, CardHeader, CardContent, InputGroup, Input, Button, Select, Icon } from '../components/ui';
@@ -202,19 +203,25 @@ const AuditSection: React.FC<{
 );
 
 const PosPage: React.FC = () => {
-  const { state, setState, showNotification, setActivePage, currentUser } = useContext(DataContext);
-  const [activeTab, setActiveTab] = useState<'sale' | 'audit'>('sale');
+  const { state, setState, showNotification, currentUser } = useContext(DataContext);
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'sale' | 'audit' | 'debts'>('sale');
   const [currentSale, setCurrentSale] = useState<{
     items: SaleItem[];
     selectedProduct: Product | null;
     paymentCurrency: 'CUP' | 'MLC' | 'USD';
     amountPaid: string;
-  }>({ items: [], selectedProduct: null, paymentCurrency: 'CUP', amountPaid: '' });
+    isDebt: boolean;
+    debtorId?: number;
+    dueDate?: string;
+  }>({ items: [], selectedProduct: null, paymentCurrency: 'CUP', amountPaid: '', isDebt: false });
   const [searchTerm, setSearchTerm] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [cashCount, setCashCount] = useState<{[key: number]: string}>({});
   const [countedMLC, setCountedMLC] = useState('');
   const [countedUSD, setCountedUSD] = useState('');
+  const [selectedDebtor, setSelectedDebtor] = useState<any>(null);
+  const [debtorSearchTerm, setDebtorSearchTerm] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const quantityInputRef = useRef<HTMLInputElement>(null);
   const paymentInputRef = useRef<HTMLInputElement>(null);
@@ -224,6 +231,13 @@ const PosPage: React.FC = () => {
     const term = searchTerm.toLowerCase();
     return state.products.filter(p => p.stock > 0 && (p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)));
   }, [searchTerm, state.products]);
+
+  // Memo: debtor search results
+  const debtorSearchResults = useMemo(() => {
+    if (debtorSearchTerm.length < 1) return [];
+    const term = debtorSearchTerm.toLowerCase();
+    return state.debtors.filter(d => d.isActive && (d.name.toLowerCase().includes(term) || d.phone.includes(term)));
+  }, [debtorSearchTerm, state.debtors]);
   // Memo: sale totals
   const saleTotals = useMemo(() => {
     const total = currentSale.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -312,9 +326,22 @@ const PosPage: React.FC = () => {
         showNotification('Error', 'El carrito está vacío.', true);
         return;
       }
-      if (saleTotals.paidInCup < saleTotals.total) {
-        showNotification('Error', 'Pago insuficiente.', true);
-        return;
+      
+      // Validaciones específicas para deudas
+      if (currentSale.isDebt) {
+        if (!currentSale.debtorId) {
+          showNotification('Error', 'Debe seleccionar un deudor para crear una deuda.', true);
+          return;
+        }
+        if (saleTotals.paidInCup > 0 && saleTotals.paidInCup < saleTotals.total) {
+          showNotification('Error', 'Si se realiza un pago parcial, debe ser menor al total.', true);
+          return;
+        }
+      } else {
+        if (saleTotals.paidInCup < saleTotals.total) {
+          showNotification('Error', 'Pago insuficiente.', true);
+          return;
+        }
       }
       setState(prev => {
         const newReportId = (prev.reports[prev.reports.length - 1]?.id || 0) + 1;
@@ -338,6 +365,29 @@ const PosPage: React.FC = () => {
             changeInCup: saleTotals.change
           }
         };
+
+        // Crear deuda si es necesario
+        let newDebt = null;
+        if (currentSale.isDebt && saleTotals.paidInCup < saleTotals.total) {
+          const debtAmount = saleTotals.total - saleTotals.paidInCup;
+          const debtor = state.debtors.find(d => d.id === currentSale.debtorId);
+          if (debtor) {
+            newDebt = {
+              id: (prev.debts.length > 0 ? Math.max(...prev.debts.map(d => d.id)) : 0) + 1,
+              debtorId: currentSale.debtorId!,
+              debtorName: debtor.name,
+              saleId: newReportId,
+              amount: debtAmount,
+              originalAmount: debtAmount,
+              description: `Deuda por venta #${newReportId}`,
+              dueDate: currentSale.dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 días por defecto
+              status: 'PENDING' as const,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              notes: `Venta #${newReportId} - Pago parcial: ${saleTotals.paidInCup.toFixed(2)} CUP`
+            };
+          }
+        }
         const totalCostOfGoods = currentSale.items.reduce((sum, item) => sum + (item.costPrice * item.quantity), 0);
         const totalProfit = saleTotals.total - totalCostOfGoods;
         const profitToInvestment = totalProfit * 0.60;
@@ -352,10 +402,30 @@ const PosPage: React.FC = () => {
         newLogs.push({ id: nextLogId++, date: newReport.date, type: 'PROFIT_SHARE_INVEST', description: `60% ganancia de Venta #${newReportId} a inversión`, amount: profitToInvestment, saleId: newReportId, investmentBalanceAfter: runningInvBalance, workerPayoutBalanceAfter: runningPayBalance });
         runningPayBalance += profitToPayout;
         newLogs.push({ id: nextLogId++, date: newReport.date, type: 'PROFIT_SHARE_PAYOUT', description: `40% ganancia de Venta #${newReportId} a pagos`, amount: profitToPayout, saleId: newReportId, investmentBalanceAfter: runningInvBalance, workerPayoutBalanceAfter: runningPayBalance });
-        return { ...prev, products: updatedProducts, reports: [...prev.reports, newReport], investmentBalance: runningInvBalance, workerPayoutBalance: runningPayBalance, transactionLog: [...prev.transactionLog, ...newLogs], };
+        const updatedState = { 
+          ...prev, 
+          products: updatedProducts, 
+          reports: [...prev.reports, newReport], 
+          investmentBalance: runningInvBalance, 
+          workerPayoutBalance: runningPayBalance, 
+          transactionLog: [...prev.transactionLog, ...newLogs]
+        };
+        
+        // Agregar la deuda si existe
+        if (newDebt) {
+          updatedState.debts = [...prev.debts, newDebt];
+          // Actualizar el total de deuda del deudor
+          updatedState.debtors = prev.debtors.map(d => 
+            d.id === newDebt!.debtorId 
+              ? { ...d, totalDebt: d.totalDebt + newDebt!.amount }
+              : d
+          );
+        }
+        
+        return updatedState;
       });
       showNotification('Éxito', `Venta registrada. Saldos actualizados.`);
-      setCurrentSale({ items: [], selectedProduct: null, paymentCurrency: 'CUP', amountPaid: '' });
+      setCurrentSale({ items: [], selectedProduct: null, paymentCurrency: 'CUP', amountPaid: '', isDebt: false });
       setSearchTerm('');
       setQuantity('1');
       searchInputRef.current?.focus();
@@ -432,7 +502,7 @@ const PosPage: React.FC = () => {
           <p className="text-lg text-gray-400 mb-8 max-w-2xl">
             Parece que es tu primera vez aquí. Para empezar a vender, primero necesitas agregar productos y categorías a tu inventario.
           </p>
-          <Button variant="primary" icon="fa-boxes" className="text-lg py-3 px-6" onClick={() => setActivePage(Page.Inventory)}>Configurar Inventario</Button>
+          <Button variant="primary" icon="fa-boxes" className="text-lg py-3 px-6" onClick={() => navigate('/inventory')}>Configurar Inventario</Button>
         </CardContent>
       </Card>
     );
@@ -442,6 +512,7 @@ const PosPage: React.FC = () => {
     <div>
         <div className="flex gap-2 mb-6 border-b border-slate-700 overflow-x-auto no-scrollbar">
           <button onClick={() => setActiveTab('sale')} className={`flex-1 px-4 py-3 text-base font-semibold rounded-t-lg transition ${activeTab === 'sale' ? 'bg-accent text-white shadow-md' : 'text-gray-400 hover:bg-slate-700'} focus:outline-none focus:ring-2 focus:ring-accent`}>Venta Actual</button>
+          <button onClick={() => setActiveTab('debts')} className={`flex-1 px-4 py-3 text-base font-semibold rounded-t-lg transition ${activeTab === 'debts' ? 'bg-accent text-white shadow-md' : 'text-gray-400 hover:bg-slate-700'} focus:outline-none focus:ring-2 focus:ring-accent`}>Venta a Crédito</button>
           <button onClick={() => setActiveTab('audit')} className={`flex-1 px-4 py-3 text-base font-semibold rounded-t-lg transition ${activeTab === 'audit' ? 'bg-accent text-white shadow-md' : 'text-gray-400 hover:bg-slate-700'} focus:outline-none focus:ring-2 focus:ring-accent`}>Auditoría</button>
         </div>
         {activeTab === 'sale' && (
@@ -511,6 +582,188 @@ const PosPage: React.FC = () => {
             <style>{` @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in { animation: fade-in 0.3s ease-out forwards; } `}</style>
             </div>
         )}
+        {activeTab === 'debts' && (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+            <div className="lg:col-span-3 order-2 lg:order-1">
+              <Card className="p-2 sm:p-4">
+                <CardHeader icon="fa-search">Venta a Crédito</CardHeader>
+                <CardContent>
+                  <div className="text-center text-xs text-gray-400 mb-4">Atajos: [Enter] Agregar | [F9] Pagar | [F12] Finalizar</div>
+                  
+                  {/* Selección de Deudor */}
+                  <div className="mb-6">
+                    <h4 className="flex items-center gap-3 text-lg font-semibold mb-3">
+                      <Icon name="fa-user"/> Seleccionar Deudor
+                    </h4>
+                    <InputGroup label="Buscar Deudor" className="relative">
+                      <Input 
+                        type="text" 
+                        placeholder="Buscar por nombre o teléfono..." 
+                        value={debtorSearchTerm} 
+                        onChange={e => setDebtorSearchTerm(e.target.value)} 
+                        autoComplete="off" 
+                        className="text-lg" 
+                      />
+                      {debtorSearchResults.length > 0 && debtorSearchTerm.length > 0 && (
+                        <div className="absolute w-full top-full mt-1 bg-slate-800 border border-slate-700 rounded-lg max-h-60 overflow-y-auto z-30 shadow-lg">
+                          {debtorSearchResults.map(debtor => (
+                            <div 
+                              key={debtor.id} 
+                              onClick={() => {
+                                setSelectedDebtor(debtor);
+                                setCurrentSale(prev => ({ ...prev, debtorId: debtor.id, isDebt: true }));
+                                setDebtorSearchTerm('');
+                              }} 
+                              className="suggestion-item p-3 hover:bg-accent cursor-pointer border-b border-slate-700 flex items-center gap-3"
+                            >
+                              <span className="text-xl">👤</span>
+                              <div>
+                                <span className="font-semibold">{debtor.name}</span>
+                                <div className="text-sm text-gray-400">{debtor.phone}</div>
+                                <div className="text-xs text-gray-500">Deuda actual: ${debtor.totalDebt.toFixed(2)}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </InputGroup>
+                    
+                    {selectedDebtor && (
+                      <div className="mt-4 p-4 bg-slate-900/50 rounded-lg border border-accent relative animate-fade-in">
+                        <button 
+                          onClick={() => {
+                            setSelectedDebtor(null);
+                            setCurrentSale(prev => ({ ...prev, debtorId: undefined, isDebt: false }));
+                          }} 
+                          className="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl leading-none z-10" 
+                          aria-label="Cancelar selección"
+                        >
+                          &times;
+                        </button>
+                        <div className="flex items-center gap-4">
+                          <span className="text-3xl">👤</span>
+                          <div>
+                            <p className="font-bold text-lg">{selectedDebtor.name}</p>
+                            <p className="text-sm text-gray-400">{selectedDebtor.phone}</p>
+                            <p className="text-sm text-warning">Deuda actual: ${selectedDebtor.totalDebt.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="min-h-[140px]">
+                    {currentSale.selectedProduct ? (
+                      <div className="bg-slate-900/50 p-4 rounded-lg border border-accent relative animate-fade-in">
+                        <button onClick={handleCancelSelection} className="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl leading-none z-10" aria-label="Cancelar selección">&times;</button>
+                        <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
+                          <span className="text-4xl">{state.categories.find(c => c.id === currentSale.selectedProduct!.categoryId)?.icon || DEFAULT_ICON}</span>
+                          <div className="text-center sm:text-left">
+                            <p className="font-bold text-lg">{currentSale.selectedProduct.name}</p>
+                            <p className="text-sm text-gray-400">Precio: ${currentSale.selectedProduct.price.toFixed(2)} | Stock: {currentSale.selectedProduct.stock}</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 items-end sm:grid-cols-[1fr_auto]">
+                          <InputGroup label="Cantidad">
+                            <Input ref={quantityInputRef} type="number" min="1" value={quantity} onChange={e => setQuantity(e.target.value)} className="w-full text-center text-lg" />
+                          </InputGroup>
+                          <Button icon="fa-plus" onClick={handleAddToSale} className="w-full sm:w-auto text-lg py-3">Agregar al Carrito</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <ProductSearchSection
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                        searchResults={searchResults}
+                        onSelect={handleSelectProduct}
+                        searchInputRef={searchInputRef}
+                        categories={state.categories}
+                      />
+                    )}
+                  </div>
+                  
+                  <div className="mt-6">
+                    <h4 className="flex items-center gap-3 text-lg font-semibold mb-3">
+                      <Icon name="fa-shopping-cart"/> Carrito de Compra
+                    </h4>
+                    <CartSection
+                      items={currentSale.items}
+                      categories={state.categories}
+                      onRemove={handleRemoveFromSale}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div className="lg:col-span-2 order-1 lg:order-2">
+              <Card className="p-2 sm:p-4">
+                <CardHeader icon="fa-credit-card">Resumen y Pago Parcial</CardHeader>
+                <CardContent className="flex flex-col h-full">
+                  {currentSale.items.length === 0 ? (
+                    <div className="flex-grow flex flex-col items-center justify-center text-center text-gray-500 p-4">
+                      <Icon name="fa-shopping-cart" className="text-5xl mb-4 text-slate-600" />
+                      <p className="text-lg font-semibold">El carrito está vacío</p>
+                      <p className="text-gray-400">Agregue productos para ver el resumen.</p>
+                    </div>
+                  ) : (
+                    <div className="flex-grow space-y-4">
+                      <div className="text-right border-b border-slate-700 pb-4 mb-4">
+                        <span className="text-gray-400">Total a Pagar</span>
+                        <div className="text-3xl font-bold">${saleTotals.total.toFixed(2)} CUP</div>
+                      </div>
+                      
+                      {/* Fecha límite opcional */}
+                      <InputGroup label="Fecha Límite (Opcional)">
+                        <Input 
+                          type="date" 
+                          value={currentSale.dueDate || ''} 
+                          onChange={e => setCurrentSale(prev => ({ ...prev, dueDate: e.target.value }))}
+                          min={new Date().toISOString().split('T')[0]}
+                        />
+                      </InputGroup>
+                      
+                      {/* Pago parcial */}
+                      <InputGroup label="Pago Inicial (Opcional)">
+                        <Input 
+                          ref={paymentInputRef}
+                          type="number" 
+                          placeholder="0.00" 
+                          value={currentSale.amountPaid} 
+                          onChange={e => setCurrentSale(prev => ({ ...prev, amountPaid: e.target.value }))}
+                          className="text-lg text-center"
+                        />
+                      </InputGroup>
+                      
+                      {currentSale.amountPaid && parseFloat(currentSale.amountPaid) > 0 && (
+                        <div className="bg-slate-900/50 p-4 rounded-lg">
+                          <div className="text-center">
+                            <span className="text-gray-400">Pago Inicial</span>
+                            <div className="text-2xl font-bold text-success">${parseFloat(currentSale.amountPaid).toFixed(2)} CUP</div>
+                            <span className="text-gray-400">Deuda Restante</span>
+                            <div className="text-xl font-bold text-warning">${(saleTotals.total - parseFloat(currentSale.amountPaid)).toFixed(2)} CUP</div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex-grow"></div>
+                      
+                      <Button 
+                        icon="fa-check-circle" 
+                        onClick={processSale} 
+                        className="w-full text-lg py-4"
+                        disabled={!selectedDebtor}
+                      >
+                        {currentSale.amountPaid && parseFloat(currentSale.amountPaid) > 0 ? 'Crear Venta con Pago Parcial' : 'Crear Deuda Completa'}
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+        
         {activeTab === 'audit' && (
         <AuditSection
           dailyAuditData={dailyAuditData}
