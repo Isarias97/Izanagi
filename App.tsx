@@ -206,33 +206,36 @@ function AppRoutes({
         {/* Componente PWA Install Prompt */}
         <PWAInstallPrompt />
         
-        {/* Header optimizado */}
-        <header className="bg-primary shadow-lg sticky top-0 z-40 p-2 sm:p-3 flex flex-row items-center justify-between gap-2 min-h-[48px] sm:min-h-[56px] w-full max-w-screen-xl mx-auto">
-          {/* Logo y título */}
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Icon name="fa-cash-register" className="text-accent text-lg sm:text-xl flex-shrink-0" />
+        {/* Header Futurista */}
+        <header className="bg-gradient-to-r from-cyber-dark via-cyber-light to-cyber-darker backdrop-blur-xl border-b border-neon-cyan/20 shadow-3d-heavy sticky top-0 z-40 p-2 sm:p-3 flex flex-row items-center justify-between gap-2 min-h-[48px] sm:min-h-[56px] w-full max-w-screen-xl mx-auto">
+          {/* Logo y título futurista */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="relative">
+              <Icon name="fa-cash-register" className="text-neon-cyan text-lg sm:text-xl flex-shrink-0 neon-pulse" />
+              <div className="absolute inset-0 bg-neon-cyan/20 rounded-full blur-sm animate-pulse"></div>
+            </div>
             <div className="flex flex-col min-w-0">
-              <h1 className="text-xs sm:text-sm font-semibold text-white truncate">
-                Izanagi <span className="text-[10px] sm:text-xs bg-accent text-primary font-bold py-0.5 px-1.5 sm:px-2 rounded-full ml-1">CUP</span>
+              <h1 className="text-xs sm:text-sm font-cyber font-bold text-white truncate gradient-neon-text">
+                IZANAGI <span className="text-[10px] sm:text-xs bg-neon-gradient text-white font-bold py-0.5 px-1.5 sm:px-2 rounded-full ml-1 neon-pulse">CUP</span>
               </h1>
-              <span className="text-[8px] sm:text-[10px] mt-0.5 text-accent/80 italic font-medium drop-shadow-sm hidden sm:block" style={{letterSpacing: '0.5px'}}>by Isarias</span>
+              <span className="text-[8px] sm:text-[10px] mt-0.5 text-neon-cyan/80 font-futuristic font-medium drop-shadow-sm hidden sm:block" style={{letterSpacing: '1px'}}>by Isarias</span>
             </div>
           </div>
           
-          {/* Info usuario y saldos */}
-          <div className="flex flex-col items-end gap-0.5 text-right flex-shrink-0 min-w-[100px] sm:min-w-[110px]">
-            <div className="flex items-center gap-1">
-              <Icon name="fa-wallet" className="text-accent text-sm sm:text-base" />
-              <span className="text-[10px] sm:text-[11px] text-white font-bold">{state.investmentBalance.toFixed(2)} CUP</span>
+          {/* Info usuario y saldos futurista */}
+          <div className="flex flex-col items-end gap-1 text-right flex-shrink-0 min-w-[100px] sm:min-w-[110px]">
+            <div className="flex items-center gap-1 bg-neon-cyan/10 rounded-lg px-2 py-1 border border-neon-cyan/20">
+              <Icon name="fa-wallet" className="text-neon-cyan text-sm sm:text-base neon-pulse" />
+              <span className="text-[10px] sm:text-[11px] text-neon-cyan font-futuristic font-bold">{state.investmentBalance.toFixed(2)} CUP</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Icon name="fa-users" className="text-accent text-sm sm:text-base" />
-              <span className="text-[10px] sm:text-[11px] text-white font-bold">{state.workerPayoutBalance.toFixed(2)} CUP</span>
+            <div className="flex items-center gap-1 bg-neon-purple/10 rounded-lg px-2 py-1 border border-neon-purple/20">
+              <Icon name="fa-users" className="text-neon-purple text-sm sm:text-base neon-pulse" />
+              <span className="text-[10px] sm:text-[11px] text-neon-purple font-futuristic font-bold">{state.workerPayoutBalance.toFixed(2)} CUP</span>
             </div>
-            <div className="flex items-center gap-1 mt-0.5">
-              <Icon name="fa-user-circle" className="text-accent text-xs sm:text-sm" />
-              <span className="text-[10px] sm:text-[11px] text-white font-semibold truncate max-w-[50px] sm:max-w-[60px]">{currentUser?.name}</span>
-              <span className="text-[8px] sm:text-[9px] text-gray-300 font-medium">{currentUser?.role}</span>
+            <div className="flex items-center gap-1 mt-0.5 bg-glass-gradient rounded-lg px-2 py-1 border border-glass-border">
+              <Icon name="fa-user-circle" className="text-neon-cyan text-xs sm:text-sm" />
+              <span className="text-[10px] sm:text-[11px] text-white font-futuristic font-semibold truncate max-w-[50px] sm:max-w-[60px]">{currentUser?.name}</span>
+              <span className="text-[8px] sm:text-[9px] text-neon-cyan/70 font-medium">{currentUser?.role}</span>
             </div>
           </div>
         </header>
@@ -271,16 +274,16 @@ function AppRoutes({
             </div>
         )}
 
-        {/* Footer optimizado */}
+        {/* Footer Futurista */}
         <footer
-          className={`bg-primary text-center p-2 sm:p-3 text-xs sm:text-sm text-gray-400 transition-all duration-500 ${footerVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
-            fixed bottom-0 left-0 w-full z-50 shadow-lg rounded-t-lg sm:rounded-none`}
-          style={{fontWeight:'bold',letterSpacing:'0.5px',fontSize:'0.9rem',boxShadow:'0 2px 8px 0 rgba(0,42,143,0.18), 0 1.5px 4px 0 rgba(207,20,43,0.12)',maxWidth:'100vw'}}
+          className={`bg-gradient-to-r from-cyber-dark via-cyber-light to-cyber-darker backdrop-blur-xl border-t border-neon-cyan/20 text-center p-2 sm:p-3 text-xs sm:text-sm text-neon-cyan/80 transition-all duration-500 ${footerVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
+            fixed bottom-0 left-0 w-full z-50 shadow-3d-heavy rounded-t-lg sm:rounded-none`}
+          style={{fontWeight:'bold',letterSpacing:'1px',fontSize:'0.9rem',maxWidth:'100vw'}}
         >
-          <span className="hidden sm:inline">Sistema de Ventas Izanagi v8.3 (Optimizado) &copy; {new Date().getFullYear()} - Todos los datos se guardan en su navegador.</span>
-          <span className="sm:hidden flex items-center justify-center gap-2">
-            <span>Creado por Isarias</span>
-            <button className="ml-2 px-1.5 py-0.5 rounded bg-accent text-primary font-bold text-[10px] shadow hover:bg-white/90 transition" onClick={()=>setFooterVisible(false)} aria-label="Ocultar pie">Ocultar</button>
+          <span className="hidden sm:inline font-futuristic">Sistema de Ventas IZANAGI v8.3 (Futurista) &copy; {new Date().getFullYear()} - Todos los datos se guardan en su navegador.</span>
+          <span className="sm:hidden flex items-center justify-center gap-2 font-futuristic">
+            <span className="gradient-neon-text">Creado por Isarias</span>
+            <button className="ml-2 px-1.5 py-0.5 rounded bg-neon-gradient text-white font-bold text-[10px] shadow-neon-medium hover:shadow-neon-heavy transition-all duration-300" onClick={()=>setFooterVisible(false)} aria-label="Ocultar pie">Ocultar</button>
           </span>
         </footer>
 
